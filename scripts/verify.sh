@@ -24,7 +24,7 @@ echo "--- magick -version ---"
 echo ""
 echo "--- Format support ---"
 MISSING=0
-for fmt in JPEG PNG TIFF WEBP AVIF; do
+for fmt in JPEG PNG TIFF WEBP AVIF PDF; do
   if "${MAGICK}" -list format | grep -q "^  *${fmt}"; then
     echo "  [OK] ${fmt}"
   else

@@ -179,6 +179,7 @@ cd imagemagick
   --with-png=yes \
   --with-tiff=yes \
   --with-lcms=yes \
+  --with-gslib=yes \
   --enable-shared \
   --disable-static \
   --without-perl \
