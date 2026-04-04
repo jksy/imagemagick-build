@@ -1,0 +1,143 @@
+name: Build and Release ImageMagick
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: 'Path to version JSON file'
+        required: false
+        default: 'versions/default.json'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ImageMagick
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            git \
+            cmake \
+            nasm \
+            ninja-build \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            jq \
+            zlib1g-dev \
+            ca-certificates
+
+      - name: Read versions
+        id: versions
+        run: |
+          VERSION_FILE="${{ github.event.inputs.version_file || 'versions/default.json' }}"
+          IM_VERSION=$(jq -r '.imagemagick' "${VERSION_FILE}")
+          echo "imagemagick=${IM_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "version_file=${VERSION_FILE}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build all libraries and ImageMagick
+        run: |
+          chmod +x scripts/build.sh
+          sudo VERSION_FILE="${{ steps.versions.outputs.version_file }}" \
+               BUILD_DIR=/tmp/imagemagick-build \
+               bash scripts/build.sh
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - name: Verify build
+        run: |
+          chmod +x scripts/verify.sh
+          PREFIX=/opt/imagemagick bash scripts/verify.sh
+
+      - name: Package build
+        run: |
+          chmod +x scripts/package.sh
+          mkdir -p /tmp/artifacts
+          sudo VERSION_FILE="${{ steps.versions.outputs.version_file }}" \
+               PREFIX=/opt/imagemagick \
+               ARCHIVE_DIR=/tmp/artifacts \
+               bash scripts/package.sh
+          ls -lh /tmp/artifacts/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: imagemagick-${{ steps.versions.outputs.imagemagick }}-ubuntu24.04-x86_64
+          path: /tmp/artifacts/*.tar.gz
+          retention-days: 7
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-24.04
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read versions
+        id: versions
+        run: |
+          IM_VERSION=$(jq -r '.imagemagick' versions/default.json)
+          echo "imagemagick=${IM_VERSION}" >> "${GITHUB_OUTPUT}"
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: imagemagick-${{ steps.versions.outputs.imagemagick }}-ubuntu24.04-x86_64
+          path: /tmp/artifacts/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ImageMagick ${{ steps.versions.outputs.imagemagick }}
+          body: |
+            ## ImageMagick ${{ steps.versions.outputs.imagemagick }} — Ubuntu 24.04 x86_64
+
+            Pre-built ImageMagick binary with SDK for RMagick / CI use.
+
+            ### Included libraries
+
+            | Library | Version |
+            |---------|---------|
+            | ImageMagick | ${{ steps.versions.outputs.imagemagick }} |
+            | libjpeg-turbo | see `versions/default.json` |
+            | libpng | see `versions/default.json` |
+            | libtiff | see `versions/default.json` |
+            | lcms2 | see `versions/default.json` |
+            | libwebp | see `versions/default.json` |
+            | libaom | see `versions/default.json` |
+            | libheif | see `versions/default.json` |
+
+            ### Supported formats
+
+            JPEG · PNG · TIFF · WebP · AVIF
+
+            ### Install
+
+            ```bash
+            tar -xzf imagemagick-*.tar.gz -C /opt
+            export PATH="/opt/imagemagick/${{ steps.versions.outputs.imagemagick }}/bin:$PATH"
+            export PKG_CONFIG_PATH="/opt/imagemagick/${{ steps.versions.outputs.imagemagick }}/lib/pkgconfig:$PKG_CONFIG_PATH"
+            export LD_LIBRARY_PATH="/opt/imagemagick/${{ steps.versions.outputs.imagemagick }}/lib:$LD_LIBRARY_PATH"
+            ```
+          files: /tmp/artifacts/*.tar.gz
+          draft: false
+          prerelease: false
