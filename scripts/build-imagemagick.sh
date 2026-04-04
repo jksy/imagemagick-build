@@ -23,28 +23,68 @@ read_version() {
   jq -r ".$1" "$VERSIONS_FILE"
 }
 
+read_required_json() {
+  local key="$1"
+  local value
+
+  value="$(jq -er ".$key" "$VERSIONS_FILE")" || {
+    echo "error: missing required key '${key}' in ${VERSIONS_FILE}" >&2
+    exit 1
+  }
+
+  printf '%s\n' "$value"
+}
+
+sha256_file() {
+  local file="$1"
+
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$file" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$file" | awk '{print $1}'
+  else
+    echo "error: sha256sum or shasum is required for archive verification" >&2
+    exit 1
+  fi
+}
+
 fetch_and_extract() {
   local url="$1"
   local archive="$2"
   local dir="$3"
+  local expected_sha256="$4"
+  local archive_path="$BUILD_DIR/src/$archive"
+  local actual_sha256
 
   mkdir -p "$BUILD_DIR/src"
-  if [[ ! -f "$BUILD_DIR/src/$archive" ]]; then
-    curl -fL "$url" -o "$BUILD_DIR/src/$archive"
+  if [[ ! -f "$archive_path" ]]; then
+    curl -fL "$url" -o "$archive_path"
+  fi
+
+  actual_sha256="$(sha256_file "$archive_path")"
+  if [[ "$actual_sha256" != "$expected_sha256" ]]; then
+    rm -f "$archive_path"
+    echo "error: checksum mismatch for $archive" >&2
+    echo "error: expected $expected_sha256" >&2
+    echo "error: got      $actual_sha256" >&2
+    exit 1
   fi
 
   rm -rf "$BUILD_DIR/$dir"
   mkdir -p "$BUILD_DIR/$dir"
-  tar -xf "$BUILD_DIR/src/$archive" -C "$BUILD_DIR/$dir" --strip-components=1
+  tar -xf "$archive_path" -C "$BUILD_DIR/$dir" --strip-components=1
 }
 
 build_libjpeg_turbo() {
   local ver
+  local sha256
   ver="$(read_version libjpeg_turbo)"
+  sha256="$(read_required_json checksums.libjpeg_turbo)"
   fetch_and_extract \
     "https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/${ver}.tar.gz" \
     "libjpeg-turbo-${ver}.tar.gz" \
-    "libjpeg-turbo-${ver}"
+    "libjpeg-turbo-${ver}" \
+    "$sha256"
 
   cmake -S "$BUILD_DIR/libjpeg-turbo-${ver}" -B "$BUILD_DIR/libjpeg-turbo-${ver}/build" \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \
