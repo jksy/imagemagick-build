@@ -38,6 +38,7 @@ jobs:
         uses: ./.github/actions/build-imagemagick
         with:
           version_file: ${{ github.event.inputs.version_file || 'versions/default.json' }}
+          cache_suffix: ${{ matrix.runner }}
 
       - name: Package build
         run: |

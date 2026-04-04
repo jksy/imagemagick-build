@@ -25,3 +25,5 @@ jobs:
 
       - name: Build and verify ImageMagick
         uses: ./.github/actions/build-imagemagick
+        with:
+          cache_suffix: ${{ matrix.runner }}
