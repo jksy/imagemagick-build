@@ -104,11 +104,13 @@ jobs:
 
       - name: No update needed
         if: steps.tag_check.outputs.exists == 'true'
-        run: echo "Tag v${{ steps.target.outputs.version }} already exists, nothing to do."
+        run: |
+          echo "Tag v${{ steps.target.outputs.version }} already exists, nothing to do."
 
       - name: Already at latest
         if: |
           steps.target.outputs.manual == 'false' &&
           steps.tag_check.outputs.exists == 'false' &&
           steps.target.outputs.version == steps.current.outputs.version
-        run: echo "Already at latest version: ${{ steps.current.outputs.version }}"
+        run: |
+          echo "Already at latest version: ${{ steps.current.outputs.version }}"
