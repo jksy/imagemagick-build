@@ -98,6 +98,7 @@ jobs:
           git add versions/default.json
           git commit -m "chore: bump ImageMagick to ${NEW}"
           git tag "v${NEW}"
+          git pull --rebase origin main
           git push origin main
           git push origin "v${NEW}"
 
