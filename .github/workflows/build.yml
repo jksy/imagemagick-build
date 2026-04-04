@@ -82,16 +82,11 @@ jobs:
           echo "libaom=$(jq -r '.libaom' versions/default.json)" >> "${GITHUB_OUTPUT}"
           echo "libheif=$(jq -r '.libheif' versions/default.json)" >> "${GITHUB_OUTPUT}"
 
-      - name: Download build artifact
+      - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: imagemagick-${{ steps.versions.outputs.imagemagick }}-ubuntu22.04-x86_64
-          path: /tmp/artifacts/
-
-      - name: Download build artifact (Ubuntu 24.04)
-        uses: actions/download-artifact@v4
-        with:
-          name: imagemagick-${{ steps.versions.outputs.imagemagick }}-ubuntu24.04-x86_64
+          pattern: imagemagick-${{ steps.versions.outputs.imagemagick }}-ubuntu*-x86_64
+          merge-multiple: true
           path: /tmp/artifacts/
 
       - name: Create Release
