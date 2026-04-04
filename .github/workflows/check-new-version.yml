@@ -22,6 +22,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
 
       - name: Resolve target version
         id: target
@@ -61,14 +62,11 @@ jobs:
         if: |
           steps.target.outputs.manual == 'true' &&
           steps.tag_check.outputs.exists == 'false'
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           NEW="${{ steps.target.outputs.version }}"
           echo "Building specified version: ${NEW}"
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git"
 
           # 一時ブランチでバージョンを書き換えてタグだけ push（main は変えない）
           git checkout -b "build-${NEW}"
@@ -85,8 +83,6 @@ jobs:
           steps.target.outputs.manual == 'false' &&
           steps.tag_check.outputs.exists == 'false' &&
           steps.target.outputs.version != steps.current.outputs.version
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           NEW="${{ steps.target.outputs.version }}"
           echo "Bumping ImageMagick from ${{ steps.current.outputs.version }} to ${NEW}"
@@ -94,7 +90,6 @@ jobs:
             > versions/default.json.tmp && mv versions/default.json.tmp versions/default.json
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git"
           git add versions/default.json
           git commit -m "chore: bump ImageMagick to ${NEW}"
           git tag "v${NEW}"
