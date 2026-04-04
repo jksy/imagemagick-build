@@ -19,15 +19,15 @@ permissions:
 jobs:
   build:
     name: Build ImageMagick (${{ matrix.os_name }})
-    runs-on: ${{ matrix.runs_on }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - runs_on: ubuntu-22.04
+          - runner: ubuntu-22.04
             os_version: 22.04
             os_name: ubuntu22.04
-          - runs_on: ubuntu-24.04
+          - runner: ubuntu-24.04
             os_version: 24.04
             os_name: ubuntu24.04
 
