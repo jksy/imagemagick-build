@@ -1,0 +1,10 @@
+{
+  "imagemagick": "7.1.2-13",
+  "libjpeg_turbo": "3.0.3",
+  "libpng": "1.6.43",
+  "libtiff": "4.7.0",
+  "lcms2": "2.16",
+  "libwebp": "1.4.0",
+  "libaom": "3.9.1",
+  "libheif": "1.18.1"
+}
