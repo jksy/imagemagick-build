@@ -17,41 +17,5 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install system build dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            build-essential \
-            git \
-            cmake \
-            nasm \
-            ninja-build \
-            autoconf \
-            automake \
-            libtool \
-            pkg-config \
-            jq \
-            zlib1g-dev \
-            ca-certificates
-
-      - name: Read versions
-        id: versions
-        run: |
-          VERSION_FILE='versions/default.json'
-          IM_VERSION=$(jq -r '.imagemagick' "${VERSION_FILE}")
-          echo "imagemagick=${IM_VERSION}" >> "${GITHUB_OUTPUT}"
-          echo "version_file=${VERSION_FILE}" >> "${GITHUB_OUTPUT}"
-
-      - name: Build all libraries and ImageMagick
-        run: |
-          chmod +x scripts/build.sh
-          sudo VERSION_FILE="${{ steps.versions.outputs.version_file }}" \
-               BUILD_DIR=/tmp/imagemagick-build \
-               bash scripts/build.sh
-        env:
-          DEBIAN_FRONTEND: noninteractive
-
-      - name: Verify build
-        run: |
-          chmod +x scripts/verify.sh
-          PREFIX=/opt/imagemagick bash scripts/verify.sh
+      - name: Build and verify ImageMagick
+        uses: ./.github/actions/build-imagemagick
