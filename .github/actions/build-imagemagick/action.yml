@@ -6,6 +6,10 @@ inputs:
     description: 'Path to version JSON file'
     required: false
     default: 'versions/default.json'
+  cache_suffix:
+    description: 'Cache key suffix to separate build environments (e.g. ubuntu-22.04)'
+    required: false
+    default: ''
 
 outputs:
   imagemagick:
@@ -64,7 +68,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: /opt/imagemagick
-        key: v1-imagemagick-libs-${{ runner.os }}-${{ runner.arch }}-${{ steps.version-hash.outputs.hash }}
+        key: v1-imagemagick-libs-${{ runner.os }}-${{ runner.arch }}-${{ inputs.cache_suffix }}-${{ steps.version-hash.outputs.hash }}
 
     - name: Build all libraries and ImageMagick
       if: steps.cache.outputs.cache-hit != 'true'

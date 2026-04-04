@@ -10,8 +10,14 @@ permissions:
 
 jobs:
   build-and-test:
-    name: Build and Test ImageMagick
-    runs-on: ubuntu-24.04
+    name: Build and Test ImageMagick (${{ matrix.runner }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -19,3 +25,5 @@ jobs:
 
       - name: Build and verify ImageMagick
         uses: ./.github/actions/build-imagemagick
+        with:
+          cache_suffix: ${{ matrix.runner }}
