@@ -1,0 +1,15 @@
+# Build artifacts
+/tmp/
+/build/
+*.tar.gz
+*.tar.bz2
+*.zip
+
+# ImageMagick install directory (local dev)
+/opt/
+
+# Editor files
+.DS_Store
+*.swp
+*.swo
+*~
