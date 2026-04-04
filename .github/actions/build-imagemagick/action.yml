@@ -35,6 +35,7 @@ runs:
           libtool \
           pkg-config \
           jq \
+          ghostscript \
           zlib1g-dev \
           ca-certificates
 
