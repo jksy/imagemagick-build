@@ -61,14 +61,17 @@ for fmt in JPEG PNG TIFF WEBP AVIF PDF; do
     echo "  [ERROR] Failed writing ${fmt}" >&2
     exit 1
   fi
+  "${MAGICK}" identify "${out_file}" >/dev/null
   echo "  [OK] write ${fmt}"
 done
 
+# Smoke test keeps PDF check lightweight by validating page 0 renderability.
 "${MAGICK}" "${TMP_DIR}/out.pdf[0]" "${TMP_DIR}/pdf_page0.png"
 if [ ! -s "${TMP_DIR}/pdf_page0.png" ]; then
   echo "  [ERROR] Failed converting PDF to PNG" >&2
   exit 1
 fi
+"${MAGICK}" identify "${TMP_DIR}/pdf_page0.png" >/dev/null
 echo "  [OK] PDF -> PNG"
 
 echo ""
