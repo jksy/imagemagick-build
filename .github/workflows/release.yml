@@ -49,10 +49,11 @@ jobs:
           else
             TAG="${GITHUB_REF_NAME}"
           fi
+          RELEASE_ID="${TAG#v}"
 
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "asset_name=imagemagick-${VERSION}-ubuntu-24.04-x86_64.tar.gz" >> "$GITHUB_OUTPUT"
+          echo "asset_name=imagemagick-${RELEASE_ID}-ubuntu-24.04-x86_64.tar.gz" >> "$GITHUB_OUTPUT"
 
       - name: Build ImageMagick SDK
         env:
