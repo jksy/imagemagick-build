@@ -51,6 +51,7 @@ TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
 "${MAGICK}" -size 64x64 gradient: "${TMP_DIR}/source.png"
+IDENTIFY_ERR="${TMP_DIR}/identify.stderr"
 
 for fmt in JPEG PNG TIFF WEBP AVIF PDF; do
   lower_fmt="$(echo "${fmt}" | tr '[:upper:]' '[:lower:]')"
@@ -61,8 +62,9 @@ for fmt in JPEG PNG TIFF WEBP AVIF PDF; do
     echo "  [ERROR] Failed writing ${fmt}" >&2
     exit 1
   fi
-  if ! "${MAGICK}" identify "${out_file}" >/dev/null; then
+  if ! "${MAGICK}" identify "${out_file}" >/dev/null 2>"${IDENTIFY_ERR}"; then
     echo "  [ERROR] Invalid or unreadable ${fmt} output: ${out_file}" >&2
+    cat "${IDENTIFY_ERR}" >&2
     exit 1
   fi
   echo "  [OK] write ${fmt}"
@@ -74,8 +76,9 @@ if [ ! -s "${TMP_DIR}/pdf_page0.png" ]; then
   echo "  [ERROR] Failed converting PDF to PNG" >&2
   exit 1
 fi
-if ! "${MAGICK}" identify "${TMP_DIR}/pdf_page0.png" >/dev/null; then
+if ! "${MAGICK}" identify "${TMP_DIR}/pdf_page0.png" >/dev/null 2>"${IDENTIFY_ERR}"; then
   echo "  [ERROR] Invalid or unreadable PNG output converted from PDF" >&2
+  cat "${IDENTIFY_ERR}" >&2
   exit 1
 fi
 echo "  [OK] PDF -> PNG"
