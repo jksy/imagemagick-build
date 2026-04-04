@@ -63,6 +63,13 @@ jobs:
         run: |
           IM_VERSION=$(jq -r '.imagemagick' versions/default.json)
           echo "imagemagick=${IM_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "libjpeg_turbo=$(jq -r '.libjpeg_turbo' versions/default.json)" >> "${GITHUB_OUTPUT}"
+          echo "libpng=$(jq -r '.libpng' versions/default.json)" >> "${GITHUB_OUTPUT}"
+          echo "libtiff=$(jq -r '.libtiff' versions/default.json)" >> "${GITHUB_OUTPUT}"
+          echo "lcms2=$(jq -r '.lcms2' versions/default.json)" >> "${GITHUB_OUTPUT}"
+          echo "libwebp=$(jq -r '.libwebp' versions/default.json)" >> "${GITHUB_OUTPUT}"
+          echo "libaom=$(jq -r '.libaom' versions/default.json)" >> "${GITHUB_OUTPUT}"
+          echo "libheif=$(jq -r '.libheif' versions/default.json)" >> "${GITHUB_OUTPUT}"
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -85,13 +92,13 @@ jobs:
             | Library | Version |
             |---------|---------|
             | ImageMagick | ${{ steps.versions.outputs.imagemagick }} |
-            | libjpeg-turbo | see `versions/default.json` |
-            | libpng | see `versions/default.json` |
-            | libtiff | see `versions/default.json` |
-            | lcms2 | see `versions/default.json` |
-            | libwebp | see `versions/default.json` |
-            | libaom | see `versions/default.json` |
-            | libheif | see `versions/default.json` |
+            | libjpeg-turbo | ${{ steps.versions.outputs.libjpeg_turbo }} |
+            | libpng | ${{ steps.versions.outputs.libpng }} |
+            | libtiff | ${{ steps.versions.outputs.libtiff }} |
+            | lcms2 | ${{ steps.versions.outputs.lcms2 }} |
+            | libwebp | ${{ steps.versions.outputs.libwebp }} |
+            | libaom | ${{ steps.versions.outputs.libaom }} |
+            | libheif | ${{ steps.versions.outputs.libheif }} |
 
             ### Supported formats
 
