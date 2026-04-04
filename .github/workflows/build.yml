@@ -19,7 +19,7 @@ permissions:
 jobs:
   build:
     name: Build ImageMagick
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
@@ -36,6 +36,7 @@ jobs:
           chmod +x scripts/package.sh
           mkdir -p /tmp/artifacts
           sudo VERSION_FILE="${{ steps.build.outputs.version_file }}" \
+               UBUNTU_VERSION=22.04 \
                PREFIX=/opt/imagemagick \
                ARCHIVE_DIR=/tmp/artifacts \
                bash scripts/package.sh
@@ -44,14 +45,14 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: imagemagick-${{ steps.build.outputs.imagemagick }}-ubuntu24.04-x86_64
+          name: imagemagick-${{ steps.build.outputs.imagemagick }}-ubuntu22.04-x86_64
           path: /tmp/artifacts/*.tar.gz
           retention-days: 7
 
   release:
     name: Create GitHub Release
     needs: build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/tags/v')
 
     steps:
@@ -74,7 +75,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: imagemagick-${{ steps.versions.outputs.imagemagick }}-ubuntu24.04-x86_64
+          name: imagemagick-${{ steps.versions.outputs.imagemagick }}-ubuntu22.04-x86_64
           path: /tmp/artifacts/
 
       - name: Create Release
@@ -83,7 +84,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: ImageMagick ${{ steps.versions.outputs.imagemagick }}
           body: |
-            ## ImageMagick ${{ steps.versions.outputs.imagemagick }} — Ubuntu 24.04 x86_64
+            ## ImageMagick ${{ steps.versions.outputs.imagemagick }} — Ubuntu 22.04 x86_64
 
             Pre-built ImageMagick binary with SDK for RMagick / CI use.
 
