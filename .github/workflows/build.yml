@@ -72,14 +72,16 @@ jobs:
         id: versions
         run: |
           IM_VERSION=$(jq -r '.imagemagick' versions/default.json)
-          echo "imagemagick=${IM_VERSION}" >> "${GITHUB_OUTPUT}"
-          echo "libjpeg_turbo=$(jq -r '.libjpeg_turbo' versions/default.json)" >> "${GITHUB_OUTPUT}"
-          echo "libpng=$(jq -r '.libpng' versions/default.json)" >> "${GITHUB_OUTPUT}"
-          echo "libtiff=$(jq -r '.libtiff' versions/default.json)" >> "${GITHUB_OUTPUT}"
-          echo "lcms2=$(jq -r '.lcms2' versions/default.json)" >> "${GITHUB_OUTPUT}"
-          echo "libwebp=$(jq -r '.libwebp' versions/default.json)" >> "${GITHUB_OUTPUT}"
-          echo "libaom=$(jq -r '.libaom' versions/default.json)" >> "${GITHUB_OUTPUT}"
-          echo "libheif=$(jq -r '.libheif' versions/default.json)" >> "${GITHUB_OUTPUT}"
+          {
+            echo "imagemagick=${IM_VERSION}"
+            echo "libjpeg_turbo=$(jq -r '.libjpeg_turbo' versions/default.json)"
+            echo "libpng=$(jq -r '.libpng' versions/default.json)"
+            echo "libtiff=$(jq -r '.libtiff' versions/default.json)"
+            echo "lcms2=$(jq -r '.lcms2' versions/default.json)"
+            echo "libwebp=$(jq -r '.libwebp' versions/default.json)"
+            echo "libaom=$(jq -r '.libaom' versions/default.json)"
+            echo "libheif=$(jq -r '.libheif' versions/default.json)"
+          } >> "${GITHUB_OUTPUT}"
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4

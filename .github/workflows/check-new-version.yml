@@ -1,0 +1,57 @@
+name: Check for new ImageMagick release
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    name: Check and bump ImageMagick version
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch latest upstream version
+        id: upstream
+        run: |
+          LATEST=$(curl -fsSL \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/ImageMagick/ImageMagick/releases/latest \
+            | jq -r '.tag_name')
+          echo "version=${LATEST}" >> "${GITHUB_OUTPUT}"
+
+      - name: Read current version
+        id: current
+        run: |
+          CURRENT=$(jq -r '.imagemagick' versions/default.json)
+          echo "version=${CURRENT}" >> "${GITHUB_OUTPUT}"
+
+      - name: Bump version if needed
+        if: steps.upstream.outputs.version != steps.current.outputs.version
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          NEW="${{ steps.upstream.outputs.version }}"
+          echo "Bumping ImageMagick from ${{ steps.current.outputs.version }} to ${NEW}"
+          jq --arg v "${NEW}" '.imagemagick = $v' versions/default.json \
+            > versions/default.json.tmp && mv versions/default.json.tmp versions/default.json
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git"
+          git add versions/default.json
+          git commit -m "chore: bump ImageMagick to ${NEW}"
+          git tag "v${NEW}"
+          git push origin main
+          git push origin "v${NEW}"
+
+      - name: No update needed
+        if: steps.upstream.outputs.version == steps.current.outputs.version
+        run: |
+          echo "Already at latest version: ${{ steps.current.outputs.version }}"

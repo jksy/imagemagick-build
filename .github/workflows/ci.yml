@@ -9,6 +9,16 @@ permissions:
   contents: read
 
 jobs:
+  actionlint:
+    name: Lint GitHub Actions workflows
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run actionlint
+        uses: raven-actions/actionlint@v2
+
   build-and-test:
     name: Build and Test ImageMagick (${{ matrix.runner }})
     runs-on: ${{ matrix.runner }}
