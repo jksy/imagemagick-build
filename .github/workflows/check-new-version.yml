@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 9 * * 1'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'ImageMagick version to build (e.g. 7.1.2-10). Leave empty to auto-detect latest.'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -18,14 +23,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch latest upstream version
-        id: upstream
+      - name: Resolve target version
+        id: target
         run: |
-          LATEST=$(curl -fsSL \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/ImageMagick/ImageMagick/releases/latest \
-            | jq -r '.tag_name')
-          echo "version=${LATEST}" >> "${GITHUB_OUTPUT}"
+          INPUT="${{ github.event.inputs.version }}"
+          if [ -n "${INPUT}" ]; then
+            echo "version=${INPUT}" >> "${GITHUB_OUTPUT}"
+            echo "manual=true" >> "${GITHUB_OUTPUT}"
+          else
+            LATEST=$(curl -fsSL \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/ImageMagick/ImageMagick/releases/latest \
+              | jq -r '.tag_name')
+            echo "version=${LATEST}" >> "${GITHUB_OUTPUT}"
+            echo "manual=false" >> "${GITHUB_OUTPUT}"
+          fi
 
       - name: Read current version
         id: current
@@ -33,12 +45,50 @@ jobs:
           CURRENT=$(jq -r '.imagemagick' versions/default.json)
           echo "version=${CURRENT}" >> "${GITHUB_OUTPUT}"
 
-      - name: Bump version if needed
-        if: steps.upstream.outputs.version != steps.current.outputs.version
+      - name: Check if tag already exists
+        id: tag_check
+        run: |
+          NEW="${{ steps.target.outputs.version }}"
+          if git ls-remote --tags origin "refs/tags/v${NEW}" | grep -q .; then
+            echo "exists=true" >> "${GITHUB_OUTPUT}"
+            echo "Tag v${NEW} already exists, skipping"
+          else
+            echo "exists=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      # --- 手動指定: main を変えずにタグだけ打つ ---
+      - name: Build specified version (manual)
+        if: |
+          steps.target.outputs.manual == 'true' &&
+          steps.tag_check.outputs.exists == 'false'
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          NEW="${{ steps.upstream.outputs.version }}"
+          NEW="${{ steps.target.outputs.version }}"
+          echo "Building specified version: ${NEW}"
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git"
+
+          # 一時ブランチでバージョンを書き換えてタグだけ push（main は変えない）
+          git checkout -b "build-${NEW}"
+          jq --arg v "${NEW}" '.imagemagick = $v' versions/default.json \
+            > versions/default.json.tmp && mv versions/default.json.tmp versions/default.json
+          git add versions/default.json
+          git commit -m "chore: build ImageMagick ${NEW}"
+          git tag "v${NEW}"
+          git push origin "v${NEW}"
+
+      # --- 自動検出: main を更新してタグを打つ ---
+      - name: Bump to latest version (auto)
+        if: |
+          steps.target.outputs.manual == 'false' &&
+          steps.tag_check.outputs.exists == 'false' &&
+          steps.target.outputs.version != steps.current.outputs.version
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          NEW="${{ steps.target.outputs.version }}"
           echo "Bumping ImageMagick from ${{ steps.current.outputs.version }} to ${NEW}"
           jq --arg v "${NEW}" '.imagemagick = $v' versions/default.json \
             > versions/default.json.tmp && mv versions/default.json.tmp versions/default.json
@@ -52,6 +102,12 @@ jobs:
           git push origin "v${NEW}"
 
       - name: No update needed
-        if: steps.upstream.outputs.version == steps.current.outputs.version
-        run: |
-          echo "Already at latest version: ${{ steps.current.outputs.version }}"
+        if: steps.tag_check.outputs.exists == 'true'
+        run: echo "Tag v${{ steps.target.outputs.version }} already exists, nothing to do."
+
+      - name: Already at latest
+        if: |
+          steps.target.outputs.manual == 'false' &&
+          steps.tag_check.outputs.exists == 'false' &&
+          steps.target.outputs.version == steps.current.outputs.version
+        run: echo "Already at latest version: ${{ steps.current.outputs.version }}"
