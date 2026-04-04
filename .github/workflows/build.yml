@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   build:
-    name: Build ImageMagick (${{ matrix.os_name }})
+    name: Build ImageMagick (${{ matrix.runner }})
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -26,10 +26,8 @@ jobs:
         include:
           - runner: ubuntu-22.04
             os_version: 22.04
-            os_name: ubuntu22.04
           - runner: ubuntu-24.04
             os_version: 24.04
-            os_name: ubuntu24.04
 
     steps:
       - name: Checkout
@@ -55,7 +53,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: imagemagick-${{ steps.build.outputs.imagemagick }}-${{ matrix.os_name }}-x86_64
+          name: imagemagick-${{ steps.build.outputs.imagemagick }}-ubuntu${{ matrix.os_version }}-x86_64
           path: /tmp/artifacts/*.tar.gz
           retention-days: 7
 
