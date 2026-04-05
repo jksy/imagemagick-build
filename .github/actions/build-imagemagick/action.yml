@@ -32,7 +32,6 @@ runs:
           build-essential \
           git \
           cmake \
-          nasm \
           ninja-build \
           autoconf \
           automake \
@@ -42,6 +41,9 @@ runs:
           ghostscript \
           zlib1g-dev \
           ca-certificates
+        if [ "$(uname -m)" = "x86_64" ]; then
+          sudo apt-get install -y --no-install-recommends nasm
+        fi
 
     - name: Read versions
       id: versions
