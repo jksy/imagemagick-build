@@ -26,8 +26,16 @@ jobs:
         include:
           - runner: ubuntu-22.04
             os_version: 22.04
+            arch: x86_64
           - runner: ubuntu-24.04
             os_version: 24.04
+            arch: x86_64
+          - runner: ubuntu-22.04-arm
+            os_version: 22.04
+            arch: aarch64
+          - runner: ubuntu-24.04-arm
+            os_version: 24.04
+            arch: aarch64
 
     steps:
       - name: Checkout
@@ -46,6 +54,7 @@ jobs:
           mkdir -p /tmp/artifacts
           sudo VERSION_FILE="${{ steps.build.outputs.version_file }}" \
                UBUNTU_VERSION=${{ matrix.os_version }} \
+               ARCH=${{ matrix.arch }} \
                PREFIX=/opt/imagemagick \
                ARCHIVE_DIR=/tmp/artifacts \
                bash scripts/package.sh
@@ -54,7 +63,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: imagemagick-${{ steps.build.outputs.imagemagick }}-ubuntu${{ matrix.os_version }}-x86_64
+          name: imagemagick-${{ steps.build.outputs.imagemagick }}-ubuntu${{ matrix.os_version }}-${{ matrix.arch }}
           path: /tmp/artifacts/*.tar.gz
           retention-days: 7
 
@@ -86,7 +95,7 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: imagemagick-${{ steps.versions.outputs.imagemagick }}-ubuntu*-x86_64
+          pattern: imagemagick-${{ steps.versions.outputs.imagemagick }}-ubuntu*
           merge-multiple: true
           path: /tmp/artifacts/
 
@@ -96,7 +105,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: ImageMagick ${{ steps.versions.outputs.imagemagick }}
           body: |
-            ## ImageMagick ${{ steps.versions.outputs.imagemagick }} — Ubuntu 22.04 / 24.04 x86_64
+            ## ImageMagick ${{ steps.versions.outputs.imagemagick }} — Ubuntu 22.04 / 24.04 · x86_64 / aarch64
 
             Pre-built ImageMagick binary with SDK for RMagick / CI use.
 
