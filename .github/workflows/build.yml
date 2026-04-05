@@ -12,6 +12,10 @@ on:
         description: 'Path to version JSON file'
         required: false
         default: 'versions/default.json'
+      skip_tests:
+        description: 'Skip make check (emergency use only)'
+        required: false
+        default: 'false'
 
 permissions:
   contents: write
@@ -47,6 +51,7 @@ jobs:
         with:
           version_file: ${{ github.event.inputs.version_file || 'versions/default.json' }}
           cache_suffix: ${{ matrix.runner }}
+          skip_tests: ${{ github.event.inputs.skip_tests || 'false' }}
 
       - name: Package build
         run: |

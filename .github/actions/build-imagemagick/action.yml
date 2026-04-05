@@ -10,6 +10,10 @@ inputs:
     description: 'Cache key suffix to separate build environments (e.g. ubuntu-22.04)'
     required: false
     default: ''
+  skip_tests:
+    description: 'Set to "true" to skip make check'
+    required: false
+    default: 'false'
 
 outputs:
   imagemagick:
@@ -77,11 +81,21 @@ runs:
       shell: bash
       env:
         DEBIAN_FRONTEND: noninteractive
+        SKIP_TESTS: ${{ inputs.skip_tests == 'true' && '1' || '0' }}
       run: |
         chmod +x scripts/build.sh
         VERSION_FILE="${{ inputs.version_file }}" \
              BUILD_DIR=/tmp/imagemagick-build \
              bash scripts/build.sh
+
+    - name: Upload test suite log on failure
+      if: failure()
+      uses: actions/upload-artifact@v7
+      with:
+        name: imagemagick-test-suite-log-${{ runner.os }}-${{ runner.arch }}
+        path: /tmp/imagemagick-build/imagemagick/tests/test-suite.log
+        if-no-files-found: ignore
+        retention-days: 7
 
     - name: Verify build
       shell: bash

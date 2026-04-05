@@ -187,6 +187,21 @@ cd imagemagick
   PKG_CONFIG_PATH="${PKG_CONFIG_PATH}"
 make -j"${NPROC}"
 make install
+
+if [ "${SKIP_TESTS:-0}" != "1" ]; then
+  echo ""
+  echo "=== Running ImageMagick test suite ==="
+  make check VERBOSE=1 || {
+    echo ""
+    echo "ERROR: make check failed. Test log:" >&2
+    if [ -f tests/test-suite.log ]; then
+      cat tests/test-suite.log >&2
+    fi
+    exit 1
+  }
+  echo "=== Test suite passed ==="
+fi
+
 cd "${BUILD_DIR}"
 
 echo ""
