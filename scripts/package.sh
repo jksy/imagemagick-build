@@ -8,10 +8,10 @@ VERSION_FILE="${VERSION_FILE:-${REPO_ROOT}/versions/default.json}"
 
 PREFIX="${PREFIX:-/opt/imagemagick}"
 IM_VERSION=$(jq -r '.imagemagick' "${VERSION_FILE}")
-UBUNTU_VERSION="${UBUNTU_VERSION:-22.04}"
+OS_TAG="${OS_TAG:-ubuntu22.04}"
 ARCH="${ARCH:-$(uname -m)}"
 
-ARCHIVE_NAME="imagemagick-${IM_VERSION}-ubuntu${UBUNTU_VERSION}-${ARCH}.tar.gz"
+ARCHIVE_NAME="imagemagick-${IM_VERSION}-${OS_TAG}-${ARCH}.tar.gz"
 ARCHIVE_PATH="${ARCHIVE_DIR:-/tmp}/${ARCHIVE_NAME}"
 
 echo "=== Packaging ImageMagick ${IM_VERSION} ==="

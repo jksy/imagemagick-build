@@ -66,6 +66,7 @@ clone_or_update https://github.com/libjpeg-turbo/libjpeg-turbo.git \
   libjpeg-turbo "${JPEG_VERSION}"
 cmake -S libjpeg-turbo -B libjpeg-turbo/build \
   -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+  -DCMAKE_INSTALL_LIBDIR=lib \
   -DENABLE_SHARED=1 \
   -DENABLE_STATIC=0
 cmake --build libjpeg-turbo/build -j"${NPROC}"
@@ -96,6 +97,7 @@ clone_or_update https://gitlab.com/libtiff/libtiff.git \
   libtiff "v${TIFF_VERSION}"
 cmake -S libtiff -B libtiff/build \
   -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+  -DCMAKE_INSTALL_LIBDIR=lib \
   -DBUILD_SHARED_LIBS=ON
 cmake --build libtiff/build -j"${NPROC}"
 cmake --install libtiff/build
@@ -125,6 +127,7 @@ clone_or_update https://aomedia.googlesource.com/aom \
   libaom "v${AOM_VERSION}"
 cmake -S libaom -B libaom/build \
   -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+  -DCMAKE_INSTALL_LIBDIR=lib \
   -DBUILD_SHARED_LIBS=1 \
   -DENABLE_TESTS=0
 cmake --build libaom/build -j"${NPROC}"
@@ -155,6 +158,7 @@ clone_or_update https://github.com/strukturag/libheif.git \
   libheif "v${HEIF_VERSION}"
 cmake -S libheif -B libheif/build \
   -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+  -DCMAKE_INSTALL_LIBDIR=lib \
   -DWITH_AOM_DECODER=ON \
   -DWITH_AOM_ENCODER=ON \
   -DWITH_X265=OFF \

@@ -22,26 +22,39 @@ permissions:
 
 jobs:
   build:
-    name: Build ImageMagick (${{ matrix.runner }})
+    name: Build ImageMagick (${{ matrix.os_tag }}-${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
+    container: ${{ matrix.container || '' }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - runner: ubuntu-22.04
-            os_version: 22.04
+            os_tag: ubuntu22.04
             arch: x86_64
           - runner: ubuntu-24.04
-            os_version: 24.04
+            os_tag: ubuntu24.04
             arch: x86_64
           - runner: ubuntu-22.04-arm
-            os_version: 22.04
+            os_tag: ubuntu22.04
             arch: aarch64
           - runner: ubuntu-24.04-arm
-            os_version: 24.04
+            os_tag: ubuntu24.04
+            arch: aarch64
+          - runner: ubuntu-24.04
+            container: amazonlinux:2023
+            os_tag: amzn2023
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            container: amazonlinux:2023
+            os_tag: amzn2023
             arch: aarch64
 
     steps:
+      - name: Install tar and git (AL2023 minimal container)
+        if: matrix.os_tag == 'amzn2023'
+        run: dnf install -y tar git
+
       - name: Checkout
         uses: actions/checkout@v6
 
@@ -50,15 +63,17 @@ jobs:
         uses: ./.github/actions/build-imagemagick
         with:
           version_file: ${{ github.event.inputs.version_file || 'versions/default.json' }}
-          cache_suffix: ${{ matrix.runner }}
+          cache_suffix: ${{ matrix.os_tag }}-${{ matrix.arch }}
           skip_tests: ${{ github.event.inputs.skip_tests || 'false' }}
 
       - name: Package build
         run: |
           chmod +x scripts/package.sh
           mkdir -p /tmp/artifacts
-          sudo VERSION_FILE="${{ steps.build.outputs.version_file }}" \
-               UBUNTU_VERSION=${{ matrix.os_version }} \
+          SUDO_CMD="$(command -v sudo 2>/dev/null || true)"
+          $SUDO_CMD env \
+               VERSION_FILE="${{ steps.build.outputs.version_file }}" \
+               OS_TAG=${{ matrix.os_tag }} \
                ARCH=${{ matrix.arch }} \
                PREFIX=/opt/imagemagick \
                ARCHIVE_DIR=/tmp/artifacts \
@@ -68,7 +83,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: imagemagick-${{ steps.build.outputs.imagemagick }}-ubuntu${{ matrix.os_version }}-${{ matrix.arch }}
+          name: imagemagick-${{ steps.build.outputs.imagemagick }}-${{ matrix.os_tag }}-${{ matrix.arch }}
           path: /tmp/artifacts/*.tar.gz
           retention-days: 7
 
@@ -112,7 +127,7 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v8
         with:
-          pattern: imagemagick-${{ steps.versions.outputs.imagemagick }}-ubuntu*
+          pattern: imagemagick-${{ steps.versions.outputs.imagemagick }}-*
           merge-multiple: true
           path: /tmp/artifacts/
 
@@ -120,7 +135,7 @@ jobs:
         run: |
           IM_VERSION="${{ steps.versions.outputs.imagemagick }}"
           cat > /tmp/release_body.md << BODYEOF
-          ## ImageMagick ${IM_VERSION} — Ubuntu 22.04 / 24.04 · x86_64 / aarch64
+          ## ImageMagick ${IM_VERSION} — Ubuntu 22.04 / 24.04 · Amazon Linux 2023 · x86_64 / aarch64
 
           Pre-built ImageMagick binary with SDK for RMagick / CI use.
 
