@@ -15,7 +15,6 @@ jobs:
   test-default-install:
     name: Test install.sh (${{ matrix.os_tag }}-${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
-    container: ${{ matrix.container || '' }}
     strategy:
       fail-fast: false
       matrix:
