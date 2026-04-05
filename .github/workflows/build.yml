@@ -39,7 +39,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build and verify ImageMagick
         id: build
@@ -61,7 +61,7 @@ jobs:
           ls -lh /tmp/artifacts/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: imagemagick-${{ steps.build.outputs.imagemagick }}-ubuntu${{ matrix.os_version }}-${{ matrix.arch }}
           path: /tmp/artifacts/*.tar.gz
@@ -75,7 +75,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Read versions
         id: versions
@@ -93,7 +93,7 @@ jobs:
           } >> "${GITHUB_OUTPUT}"
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: imagemagick-${{ steps.versions.outputs.imagemagick }}-ubuntu*
           merge-multiple: true
