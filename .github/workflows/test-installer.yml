@@ -31,7 +31,22 @@ jobs:
           - runner: ubuntu-24.04-arm
             os_tag: ubuntu24.04
             arch: aarch64
+          - runner: ubuntu-24.04
+            container: amazonlinux:2023
+            os_tag: amzn2023
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            container: amazonlinux:2023
+            os_tag: amzn2023
+            arch: aarch64
+
+    container: ${{ matrix.container || '' }}
+
     steps:
+      - name: Install tar, git, and curl (AL2023 minimal container)
+        if: matrix.os_tag == 'amzn2023'
+        run: dnf install -y tar git curl
+
       - name: Checkout
         uses: actions/checkout@v6
 
