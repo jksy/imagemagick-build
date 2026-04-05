@@ -30,6 +30,20 @@ JPEG, PNG, TIFF, WebP, AVIF, PDF
 
 > Versions are managed in [`versions/default.json`](versions/default.json).
 
+## Quick Install
+
+Ubuntu 22.04 / 24.04 (x86_64 / aarch64) に1行でインストールできます:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | bash
+```
+
+カスタムインストール先を指定する場合 / Custom install location:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | IMAGEMAGICK_INSTALL_BASE=$HOME/.local bash
+```
+
 ## Usage: Download Pre-built Binary
 
 > **For GitHub Actions users:** [jksy/setup-imagemagick](https://github.com/jksy/setup-imagemagick) provides a ready-to-use action that downloads and sets up ImageMagick from these releases automatically.
