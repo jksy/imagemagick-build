@@ -53,8 +53,8 @@
       "customType": "regex",
       "fileMatch": ["^versions/default\\.json$"],
       "matchStrings": ["\"libaom\":\\s*\"(?<currentValue>[^\"]+)\""],
-      "depNameTemplate": "AOMediaCodec/libaom",
-      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "https://aomedia.googlesource.com/aom",
+      "datasourceTemplate": "git-tags",
       "versioningTemplate": "loose",
       "extractVersionTemplate": "^v?(?<version>.+)$"
     },
