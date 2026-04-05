@@ -44,6 +44,7 @@ runs:
           jq \
           ghostscript \
           zlib1g-dev \
+          libfreetype6-dev \
           ca-certificates
         if [ "$(uname -m)" = "x86_64" ]; then
           sudo apt-get install -y --no-install-recommends nasm
@@ -74,7 +75,7 @@ runs:
       uses: actions/cache@v5
       with:
         path: /opt/imagemagick
-        key: v1-imagemagick-libs-${{ runner.os }}-${{ runner.arch }}-${{ inputs.cache_suffix }}-${{ steps.version-hash.outputs.hash }}
+        key: v2-imagemagick-libs-${{ runner.os }}-${{ runner.arch }}-${{ inputs.cache_suffix }}-${{ steps.version-hash.outputs.hash }}
 
     - name: Build all libraries and ImageMagick
       if: steps.cache.outputs.cache-hit != 'true'
