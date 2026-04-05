@@ -2,7 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base"],
   "enabledManagers": ["github-actions", "custom.regex"],
-  "ignoreDeps": ["imagemagick", "libaom"],
+  "ignoreDeps": ["imagemagick"],
   "customManagers": [
     {
       "customType": "regex",
@@ -46,6 +46,15 @@
       "matchStrings": ["\"libwebp\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "webmproject/libwebp",
       "datasourceTemplate": "github-releases",
+      "versioningTemplate": "loose",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^versions/default\\.json$"],
+      "matchStrings": ["\"libaom\":\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "https://aomedia.googlesource.com/aom",
+      "datasourceTemplate": "git-tags",
       "versioningTemplate": "loose",
       "extractVersionTemplate": "^v?(?<version>.+)$"
     },
