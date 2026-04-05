@@ -42,12 +42,12 @@ jobs:
             arch: aarch64
 
     steps:
+      - name: Install tar, git, and curl (AL2023 minimal container)
+        if: matrix.os_tag == 'amzn2023'
+        run: dnf install -y tar git curl
+
       - name: Checkout
         uses: actions/checkout@v6
-
-      - name: Install curl (AL2023 container)
-        if: matrix.os_tag == 'amzn2023'
-        run: dnf install -y curl
 
       - name: Run install.sh
         run: bash install.sh

@@ -49,6 +49,10 @@ jobs:
             arch: aarch64
 
     steps:
+      - name: Install tar and git (AL2023 minimal container)
+        if: matrix.os_tag == 'amzn2023'
+        run: dnf install -y tar git
+
       - name: Checkout
         uses: actions/checkout@v6
 
