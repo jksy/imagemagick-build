@@ -20,16 +20,33 @@ jobs:
         uses: raven-actions/actionlint@v2
 
   build-and-test:
-    name: Build and Test ImageMagick (${{ matrix.runner }})
+    name: Build and Test ImageMagick (${{ matrix.os_tag }}-${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
+    container: ${{ matrix.container || '' }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - runner: ubuntu-22.04
+            os_tag: ubuntu22.04
+            arch: x86_64
           - runner: ubuntu-24.04
+            os_tag: ubuntu24.04
+            arch: x86_64
           - runner: ubuntu-22.04-arm
+            os_tag: ubuntu22.04
+            arch: aarch64
           - runner: ubuntu-24.04-arm
+            os_tag: ubuntu24.04
+            arch: aarch64
+          - runner: ubuntu-24.04
+            container: amazonlinux:2023
+            os_tag: amzn2023
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            container: amazonlinux:2023
+            os_tag: amzn2023
+            arch: aarch64
 
     steps:
       - name: Checkout
@@ -38,4 +55,4 @@ jobs:
       - name: Build and verify ImageMagick
         uses: ./.github/actions/build-imagemagick
         with:
-          cache_suffix: ${{ matrix.runner }}
+          cache_suffix: ${{ matrix.os_tag }}-${{ matrix.arch }}
