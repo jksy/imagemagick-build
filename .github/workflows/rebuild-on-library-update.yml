@@ -1,0 +1,67 @@
+name: Rebuild on library update
+
+on:
+  push:
+    branches: [main]
+    paths: ['versions/default.json']
+
+permissions:
+  contents: write
+
+jobs:
+  create-snapshot-tag:
+    name: Create snapshot tag for library rebuild
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Check if this is a library-only update
+        id: check
+        run: |
+          IM_VERSION=$(jq -r '.imagemagick' versions/default.json)
+          echo "im_version=${IM_VERSION}" >> "${GITHUB_OUTPUT}"
+
+          # If the imagemagick version itself changed, this is an IM bump committed by
+          # check-new-version.yml — that workflow already handles tag creation, so skip here.
+          PREV_IM=$(git show HEAD~1:versions/default.json 2>/dev/null \
+            | jq -r '.imagemagick' 2>/dev/null || echo "")
+          if [ "${PREV_IM}" != "${IM_VERSION}" ]; then
+            echo "is_library_update=false" >> "${GITHUB_OUTPUT}"
+            echo "ImageMagick version changed (${PREV_IM} → ${IM_VERSION}) — check-new-version.yml handles this"
+            exit 0
+          fi
+
+          # IM version is unchanged. If v{IM_VERSION} tag already exists,
+          # this is a library-only rebuild.
+          if git ls-remote --tags origin "refs/tags/v${IM_VERSION}" | grep -q .; then
+            echo "is_library_update=true" >> "${GITHUB_OUTPUT}"
+            echo "Library-only update detected for IM ${IM_VERSION}"
+          else
+            echo "is_library_update=false" >> "${GITHUB_OUTPUT}"
+            echo "Tag v${IM_VERSION} does not exist yet — skipping"
+          fi
+
+      - name: Create snapshot tag
+        if: steps.check.outputs.is_library_update == 'true'
+        run: |
+          IM_VERSION="${{ steps.check.outputs.im_version }}"
+          DATE=$(date +%Y%m%d)
+          TAG="v${IM_VERSION}-${DATE}"
+
+          # Handle same-day collisions by appending a counter
+          BASE_TAG="${TAG}"
+          N=1
+          while git ls-remote --tags origin "refs/tags/${TAG}" | grep -q .; do
+            N=$((N + 1))
+            TAG="${BASE_TAG}-${N}"
+          done
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${TAG}"
+          git push origin "${TAG}"
+          echo "Created snapshot tag: ${TAG}"

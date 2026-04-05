@@ -92,6 +92,18 @@ jobs:
             echo "libheif=$(jq -r '.libheif' versions/default.json)"
           } >> "${GITHUB_OUTPUT}"
 
+      - name: Detect tag type
+        id: tag_type
+        run: |
+          TAG="${{ github.ref_name }}"
+          IM_VERSION="${{ steps.versions.outputs.imagemagick }}"
+          # Dated snapshot tags look like v7.1.2-18-20260405 or v7.1.2-18-20260405-2
+          if [[ "${TAG}" == "v${IM_VERSION}-"* ]]; then
+            echo "is_dated=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "is_dated=false" >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -99,41 +111,62 @@ jobs:
           merge-multiple: true
           path: /tmp/artifacts/
 
+      - name: Generate release body
+        run: |
+          IM_VERSION="${{ steps.versions.outputs.imagemagick }}"
+          cat > /tmp/release_body.md << BODYEOF
+          ## ImageMagick ${IM_VERSION} — Ubuntu 22.04 / 24.04 · x86_64 / aarch64
+
+          Pre-built ImageMagick binary with SDK for RMagick / CI use.
+
+          ### Included libraries
+
+          | Library | Version |
+          |---------|---------|
+          | ImageMagick | ${IM_VERSION} |
+          | libjpeg-turbo | ${{ steps.versions.outputs.libjpeg_turbo }} |
+          | libpng | ${{ steps.versions.outputs.libpng }} |
+          | libtiff | ${{ steps.versions.outputs.libtiff }} |
+          | lcms2 | ${{ steps.versions.outputs.lcms2 }} |
+          | libwebp | ${{ steps.versions.outputs.libwebp }} |
+          | libaom | ${{ steps.versions.outputs.libaom }} |
+          | libheif | ${{ steps.versions.outputs.libheif }} |
+
+          ### Supported formats
+
+          JPEG · PNG · TIFF · WebP · AVIF · PDF
+
+          ### Install
+
+          \`\`\`bash
+          tar -xzf imagemagick-*.tar.gz -C /opt
+          export PATH="/opt/imagemagick/${IM_VERSION}/bin:\$PATH"
+          export PKG_CONFIG_PATH="/opt/imagemagick/${IM_VERSION}/lib/pkgconfig:\$PKG_CONFIG_PATH"
+          export LD_LIBRARY_PATH="/opt/imagemagick/${IM_VERSION}/lib:\$LD_LIBRARY_PATH"
+          \`\`\`
+          BODYEOF
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: ImageMagick ${{ steps.versions.outputs.imagemagick }}
-          body: |
-            ## ImageMagick ${{ steps.versions.outputs.imagemagick }} — Ubuntu 22.04 / 24.04 · x86_64 / aarch64
-
-            Pre-built ImageMagick binary with SDK for RMagick / CI use.
-
-            ### Included libraries
-
-            | Library | Version |
-            |---------|---------|
-            | ImageMagick | ${{ steps.versions.outputs.imagemagick }} |
-            | libjpeg-turbo | ${{ steps.versions.outputs.libjpeg_turbo }} |
-            | libpng | ${{ steps.versions.outputs.libpng }} |
-            | libtiff | ${{ steps.versions.outputs.libtiff }} |
-            | lcms2 | ${{ steps.versions.outputs.lcms2 }} |
-            | libwebp | ${{ steps.versions.outputs.libwebp }} |
-            | libaom | ${{ steps.versions.outputs.libaom }} |
-            | libheif | ${{ steps.versions.outputs.libheif }} |
-
-            ### Supported formats
-
-            JPEG · PNG · TIFF · WebP · AVIF · PDF
-
-            ### Install
-
-            ```bash
-            tar -xzf imagemagick-*.tar.gz -C /opt
-            export PATH="/opt/imagemagick/${{ steps.versions.outputs.imagemagick }}/bin:$PATH"
-            export PKG_CONFIG_PATH="/opt/imagemagick/${{ steps.versions.outputs.imagemagick }}/lib/pkgconfig:$PKG_CONFIG_PATH"
-            export LD_LIBRARY_PATH="/opt/imagemagick/${{ steps.versions.outputs.imagemagick }}/lib:$LD_LIBRARY_PATH"
-            ```
+          body_path: /tmp/release_body.md
           files: /tmp/artifacts/*.tar.gz
           draft: false
           prerelease: false
+
+      - name: Update rolling release
+        if: steps.tag_type.outputs.is_dated == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ROLLING_TAG="v${{ steps.versions.outputs.imagemagick }}"
+
+          # Upload new artifacts, overwriting existing ones (-clobber replaces files with same name)
+          gh release upload "${ROLLING_TAG}" /tmp/artifacts/*.tar.gz --clobber
+
+          # Update release title and body
+          gh release edit "${ROLLING_TAG}" \
+            --title "ImageMagick ${{ steps.versions.outputs.imagemagick }}" \
+            --notes-file /tmp/release_body.md
