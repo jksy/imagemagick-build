@@ -1,0 +1,81 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:base"],
+  "enabledManagers": ["github-actions", "custom.regex"],
+  "ignoreDeps": ["imagemagick"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^versions/default\\.json$"],
+      "matchStrings": ["\"libjpeg_turbo\":\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "libjpeg-turbo/libjpeg-turbo",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^versions/default\\.json$"],
+      "matchStrings": ["\"libpng\":\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "glennrp/libpng",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "loose",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^versions/default\\.json$"],
+      "matchStrings": ["\"libtiff\":\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "libtiff/libtiff",
+      "datasourceTemplate": "gitlab-releases",
+      "registryUrlTemplate": "https://gitlab.com",
+      "versioningTemplate": "loose",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^versions/default\\.json$"],
+      "matchStrings": ["\"lcms2\":\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "mm2/Little-CMS",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "loose",
+      "extractVersionTemplate": "^lcms(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^versions/default\\.json$"],
+      "matchStrings": ["\"libwebp\":\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "webmproject/libwebp",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "loose",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^versions/default\\.json$"],
+      "matchStrings": ["\"libaom\":\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "AOMediaCodec/libaom",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "loose",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^versions/default\\.json$"],
+      "matchStrings": ["\"libheif\":\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "strukturag/libheif",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "loose",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions"
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "groupName": "bundled libraries"
+    }
+  ]
+}
