@@ -41,9 +41,39 @@ esac
 
 echo "Detected: ${PRETTY_NAME:-${ID} ${VERSION_ID}} / ${ARCH}"
 
-# Fetch latest release asset URL
-echo "Fetching latest release from GitHub..."
-RELEASE_JSON=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest")
+# Ensure required tools and runtime dependencies are available
+_missing=()
+command -v curl >/dev/null 2>&1 || _missing+=(curl)
+command -v tar  >/dev/null 2>&1 || _missing+=(tar)
+
+case "${ID:-}" in
+  ubuntu)
+    if [[ ${#_missing[@]} -gt 0 ]]; then
+      echo "Installing missing dependencies: ${_missing[*]}"
+      apt-get install -y -qq "${_missing[@]}"
+    fi
+    ;;
+  amzn)
+    # freetype is not bundled and must be installed from the system
+    _missing+=(freetype)
+    echo "Installing dependencies: ${_missing[*]}"
+    dnf install -y -q --allowerasing "${_missing[@]}"
+    ;;
+esac
+unset _missing
+
+# Fetch release asset URL (specific version or latest)
+_curl_auth=()
+[[ -n "${GITHUB_TOKEN:-}" ]] && _curl_auth=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+
+if [[ -n "${IMAGEMAGICK_VERSION:-}" ]]; then
+  echo "Fetching release ${IMAGEMAGICK_VERSION} from GitHub..."
+  RELEASE_JSON=$(curl -fsSL "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/releases/tags/${IMAGEMAGICK_VERSION}")
+else
+  echo "Fetching latest release from GitHub..."
+  RELEASE_JSON=$(curl -fsSL "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/releases/latest")
+fi
+unset _curl_auth
 ASSET_URL=$(echo "$RELEASE_JSON" \
   | grep '"browser_download_url"' \
   | grep "${OS_TAG}-${ARCH}" \

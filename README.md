@@ -38,6 +38,12 @@ Ubuntu 22.04 / 24.04 (x86_64 / aarch64) に1行でインストールできます
 curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | bash
 ```
 
+特定バージョンを指定する場合 / To install a specific version:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | IMAGEMAGICK_VERSION=v7.1.2-18 bash
+```
+
 カスタムインストール先を指定する場合 / Custom install location:
 
 ```bash

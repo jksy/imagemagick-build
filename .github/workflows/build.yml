@@ -159,10 +159,13 @@ jobs:
           ### Install
 
           \`\`\`bash
-          tar -xzf imagemagick-*.tar.gz -C /opt
-          export PATH="/opt/imagemagick/${IM_VERSION}/bin:\$PATH"
-          export PKG_CONFIG_PATH="/opt/imagemagick/${IM_VERSION}/lib/pkgconfig:\$PKG_CONFIG_PATH"
-          export LD_LIBRARY_PATH="/opt/imagemagick/${IM_VERSION}/lib:\$LD_LIBRARY_PATH"
+          curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | IMAGEMAGICK_VERSION=${TAG} bash
+          \`\`\`
+
+          最新版をインストールする場合 / To install the latest version:
+
+          \`\`\`bash
+          curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | bash
           \`\`\`
           BODYEOF
 
