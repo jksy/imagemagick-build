@@ -41,18 +41,25 @@ esac
 
 echo "Detected: ${PRETTY_NAME:-${ID} ${VERSION_ID}} / ${ARCH}"
 
-# Ensure required tools are available
+# Ensure required tools and runtime dependencies are available
 _missing=()
 command -v curl >/dev/null 2>&1 || _missing+=(curl)
 command -v tar  >/dev/null 2>&1 || _missing+=(tar)
 
-if [[ ${#_missing[@]} -gt 0 ]]; then
-  echo "Installing missing dependencies: ${_missing[*]}"
-  case "${ID:-}" in
-    ubuntu) apt-get install -y -qq "${_missing[@]}" ;;
-    amzn)   dnf install -y -q --allowerasing "${_missing[@]}" ;;
-  esac
-fi
+case "${ID:-}" in
+  ubuntu)
+    if [[ ${#_missing[@]} -gt 0 ]]; then
+      echo "Installing missing dependencies: ${_missing[*]}"
+      apt-get install -y -qq "${_missing[@]}"
+    fi
+    ;;
+  amzn)
+    # freetype is not bundled and must be installed from the system
+    _missing+=(freetype)
+    echo "Installing dependencies: ${_missing[*]}"
+    dnf install -y -q --allowerasing "${_missing[@]}"
+    ;;
+esac
 unset _missing
 
 # Fetch release asset URL (specific version or latest)
