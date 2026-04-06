@@ -45,7 +45,7 @@ jobs:
     steps:
       - name: Install tar, git, and curl (AL2023 minimal container)
         if: matrix.os_tag == 'amzn2023'
-        run: dnf install -y tar git curl
+        run: dnf install -y --allowerasing tar git curl
 
       - name: Checkout
         uses: actions/checkout@v6
@@ -78,6 +78,32 @@ jobs:
           export PATH="${HOME}/.local/imagemagick/${IM_VERSION}/bin:${PATH}"
           export LD_LIBRARY_PATH="${HOME}/.local/imagemagick/${IM_VERSION}/lib:${LD_LIBRARY_PATH:-}"
           magick -version
+
+  test-version-pinned-install:
+    name: Test install.sh with IMAGEMAGICK_VERSION
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Get latest release tag
+        id: latest
+        run: |
+          TAG=$(curl -fsSL "https://api.github.com/repos/jksy/imagemagick-build/releases/latest" | grep '"tag_name"' | cut -d'"' -f4)
+          echo "tag=${TAG}" >> "${GITHUB_OUTPUT}"
+
+      - name: Run install.sh with pinned version
+        run: IMAGEMAGICK_VERSION="${{ steps.latest.outputs.tag }}" bash install.sh
+
+      - name: Verify pinned version is installed
+        run: |
+          IM_VERSION=$(ls /opt/imagemagick/)
+          export PATH="/opt/imagemagick/${IM_VERSION}/bin:${PATH}"
+          export LD_LIBRARY_PATH="/opt/imagemagick/${IM_VERSION}/lib:${LD_LIBRARY_PATH:-}"
+          magick -version
+          echo "Installed version: ${IM_VERSION}"
+          echo "Requested tag: ${{ steps.latest.outputs.tag }}"
 
   test-unsupported-os:
     name: Test error on unsupported OS (Ubuntu 20.04)
