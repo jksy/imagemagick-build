@@ -159,7 +159,7 @@ jobs:
           ### Install
 
           \`\`\`bash
-          curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | IMAGEMAGICK_VERSION=${{ github.ref_name }} bash
+          curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | IMAGEMAGICK_VERSION=${TAG} bash
           \`\`\`
 
           最新版をインストールする場合 / To install the latest version:
