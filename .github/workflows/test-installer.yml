@@ -43,9 +43,9 @@ jobs:
     container: ${{ matrix.container || '' }}
 
     steps:
-      - name: Install tar, git, and curl (AL2023 minimal container)
+      - name: Install git (AL2023 minimal container)
         if: matrix.os_tag == 'amzn2023'
-        run: dnf install -y --allowerasing tar git curl
+        run: dnf install -y git
 
       - name: Checkout
         uses: actions/checkout@v6
@@ -112,10 +112,10 @@ jobs:
       image: ubuntu:20.04
 
     steps:
-      - name: Install dependencies
+      - name: Install git
         run: |
           apt-get update -qq
-          apt-get install -y -qq curl git
+          apt-get install -y -qq git
 
       - name: Checkout
         uses: actions/checkout@v6
