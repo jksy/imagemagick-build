@@ -105,7 +105,7 @@ runs:
       uses: actions/cache@v5
       with:
         path: /opt/imagemagick
-        key: v2-imagemagick-libs-${{ runner.os }}-${{ runner.arch }}-${{ inputs.cache_suffix }}-${{ steps.version-hash.outputs.hash }}
+        key: v3-imagemagick-libs-${{ runner.os }}-${{ runner.arch }}-${{ inputs.cache_suffix }}-${{ steps.version-hash.outputs.hash }}
 
     - name: Build all libraries and ImageMagick
       if: steps.cache.outputs.cache-hit != 'true'
