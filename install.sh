@@ -63,13 +63,17 @@ esac
 unset _missing
 
 # Fetch release asset URL (specific version or latest)
+_curl_auth=()
+[[ -n "${GITHUB_TOKEN:-}" ]] && _curl_auth=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+
 if [[ -n "${IMAGEMAGICK_VERSION:-}" ]]; then
   echo "Fetching release ${IMAGEMAGICK_VERSION} from GitHub..."
-  RELEASE_JSON=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/tags/${IMAGEMAGICK_VERSION}")
+  RELEASE_JSON=$(curl -fsSL "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/releases/tags/${IMAGEMAGICK_VERSION}")
 else
   echo "Fetching latest release from GitHub..."
-  RELEASE_JSON=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest")
+  RELEASE_JSON=$(curl -fsSL "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/releases/latest")
 fi
+unset _curl_auth
 ASSET_URL=$(echo "$RELEASE_JSON" \
   | grep '"browser_download_url"' \
   | grep "${OS_TAG}-${ARCH}" \
