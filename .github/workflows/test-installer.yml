@@ -113,6 +113,66 @@ jobs:
           echo "Installed version: ${IM_VERSION}"
           echo "Requested tag: ${{ steps.latest.outputs.tag }}"
 
+  test-version-without-v-prefix:
+    name: Test install.sh with IMAGEMAGICK_VERSION without v prefix
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Get latest release tag (strip v prefix)
+        id: latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(curl -fsSL -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/jksy/imagemagick-build/releases/latest" | grep '"tag_name"' | cut -d'"' -f4)
+          echo "tag=${TAG#v}" >> "${GITHUB_OUTPUT}"
+
+      - name: Run install.sh with version without v prefix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: IMAGEMAGICK_VERSION="${{ steps.latest.outputs.tag }}" bash install.sh
+
+      - name: Verify installation
+        run: |
+          IM_VERSION=$(ls /opt/imagemagick/)
+          export PATH="/opt/imagemagick/${IM_VERSION}/bin:${PATH}"
+          export LD_LIBRARY_PATH="/opt/imagemagick/${IM_VERSION}/lib:${LD_LIBRARY_PATH:-}"
+          magick -version
+          echo "Installed version: ${IM_VERSION}"
+          echo "Requested tag (no v prefix): ${{ steps.latest.outputs.tag }}"
+
+  test-version-with-v-prefix:
+    name: Test install.sh with IMAGEMAGICK_VERSION with v prefix
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Get latest release tag (with v prefix)
+        id: latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(curl -fsSL -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/jksy/imagemagick-build/releases/latest" | grep '"tag_name"' | cut -d'"' -f4)
+          echo "tag=v${TAG#v}" >> "${GITHUB_OUTPUT}"
+
+      - name: Run install.sh with version with v prefix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: IMAGEMAGICK_VERSION="${{ steps.latest.outputs.tag }}" bash install.sh
+
+      - name: Verify installation
+        run: |
+          IM_VERSION=$(ls /opt/imagemagick/)
+          export PATH="/opt/imagemagick/${IM_VERSION}/bin:${PATH}"
+          export LD_LIBRARY_PATH="/opt/imagemagick/${IM_VERSION}/lib:${LD_LIBRARY_PATH:-}"
+          magick -version
+          echo "Installed version: ${IM_VERSION}"
+          echo "Requested tag (with v prefix): ${{ steps.latest.outputs.tag }}"
+
   test-unsupported-os:
     name: Test error on unsupported OS (Ubuntu 20.04)
     runs-on: ubuntu-24.04
