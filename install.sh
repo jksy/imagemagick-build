@@ -67,6 +67,7 @@ _curl_auth=()
 [[ -n "${GITHUB_TOKEN:-}" ]] && _curl_auth=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
 
 if [[ -n "${IMAGEMAGICK_VERSION:-}" ]]; then
+  IMAGEMAGICK_VERSION="v${IMAGEMAGICK_VERSION#v}"
   echo "Fetching release ${IMAGEMAGICK_VERSION} from GitHub..."
   RELEASE_JSON=$(curl -fsSL "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/releases/tags/${IMAGEMAGICK_VERSION}")
 else
