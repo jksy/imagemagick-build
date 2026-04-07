@@ -43,8 +43,9 @@ echo "Detected: ${PRETTY_NAME:-${ID} ${VERSION_ID}} / ${ARCH}"
 
 # Ensure required tools and runtime dependencies are available
 _missing=()
-command -v curl >/dev/null 2>&1 || _missing+=(curl)
-command -v tar  >/dev/null 2>&1 || _missing+=(tar)
+command -v curl       >/dev/null 2>&1 || _missing+=(curl)
+command -v tar        >/dev/null 2>&1 || _missing+=(tar)
+command -v pkg-config >/dev/null 2>&1 || _missing+=(pkg-config)
 
 case "${ID:-}" in
   ubuntu)
@@ -55,7 +56,8 @@ case "${ID:-}" in
     ;;
   amzn)
     # freetype is not bundled and must be installed from the system
-    _missing+=(freetype)
+    # pkgconf-pkg-config provides pkg-config on Amazon Linux 2023
+    _missing+=(freetype pkgconf-pkg-config)
     echo "Installing dependencies: ${_missing[*]}"
     dnf install -y -q --allowerasing "${_missing[@]}"
     ;;
@@ -99,6 +101,7 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 curl -fsSL --progress-bar -o "${TMP_DIR}/${TARBALL}" "$ASSET_URL"
 
 # Extract (use sudo if INSTALL_BASE is not writable)
+USE_SUDO=0
 if [[ -w "$INSTALL_BASE" ]] || [[ ! -e "$INSTALL_BASE" && -w "$(dirname "$INSTALL_BASE")" ]]; then
   mkdir -p "$INSTALL_BASE"
   tar -xzf "${TMP_DIR}/${TARBALL}" -C "$INSTALL_BASE"
@@ -106,6 +109,20 @@ else
   echo "No write permission to ${INSTALL_BASE}, using sudo..."
   sudo mkdir -p "$INSTALL_BASE"
   sudo tar -xzf "${TMP_DIR}/${TARBALL}" -C "$INSTALL_BASE"
+  USE_SUDO=1
+fi
+
+# Fix pkg-config prefix to match actual installation path
+PC_DIR="${INSTALL_BASE}/imagemagick/${IM_VERSION}/lib/pkgconfig"
+if [[ -d "$PC_DIR" ]]; then
+  for _pc in "${PC_DIR}"/*.pc; do
+    [[ -f "$_pc" ]] || continue
+    if [[ "$USE_SUDO" -eq 1 ]]; then
+      sudo sed -i "s|^prefix=.*|prefix=${INSTALL_BASE}/imagemagick/${IM_VERSION}|" "$_pc"
+    else
+      sed -i "s|^prefix=.*|prefix=${INSTALL_BASE}/imagemagick/${IM_VERSION}|" "$_pc"
+    fi
+  done
 fi
 
 BIN_DIR="${INSTALL_BASE}/imagemagick/${IM_VERSION}/bin"
