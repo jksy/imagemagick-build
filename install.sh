@@ -99,6 +99,7 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 curl -fsSL --progress-bar -o "${TMP_DIR}/${TARBALL}" "$ASSET_URL"
 
 # Extract (use sudo if INSTALL_BASE is not writable)
+USE_SUDO=0
 if [[ -w "$INSTALL_BASE" ]] || [[ ! -e "$INSTALL_BASE" && -w "$(dirname "$INSTALL_BASE")" ]]; then
   mkdir -p "$INSTALL_BASE"
   tar -xzf "${TMP_DIR}/${TARBALL}" -C "$INSTALL_BASE"
@@ -106,6 +107,17 @@ else
   echo "No write permission to ${INSTALL_BASE}, using sudo..."
   sudo mkdir -p "$INSTALL_BASE"
   sudo tar -xzf "${TMP_DIR}/${TARBALL}" -C "$INSTALL_BASE"
+  USE_SUDO=1
+fi
+
+# Fix pkg-config prefix to match actual installation path
+PC_DIR="${INSTALL_BASE}/imagemagick/${IM_VERSION}/lib/pkgconfig"
+if [[ -d "$PC_DIR" ]]; then
+  if [[ "$USE_SUDO" -eq 1 ]]; then
+    sudo find "$PC_DIR" -name "*.pc" -exec sed -i "s|^prefix=.*|prefix=${INSTALL_BASE}/imagemagick/${IM_VERSION}|" {} +
+  else
+    find "$PC_DIR" -name "*.pc" -exec sed -i "s|^prefix=.*|prefix=${INSTALL_BASE}/imagemagick/${IM_VERSION}|" {} +
+  fi
 fi
 
 BIN_DIR="${INSTALL_BASE}/imagemagick/${IM_VERSION}/bin"
