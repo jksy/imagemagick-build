@@ -45,7 +45,7 @@ jobs:
     steps:
       - name: Install git (AL2023 minimal container)
         if: matrix.os_tag == 'amzn2023'
-        run: dnf install -y git pkgconf-pkg-config
+        run: dnf install -y git
 
       - name: Checkout
         uses: actions/checkout@v6

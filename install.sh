@@ -43,8 +43,9 @@ echo "Detected: ${PRETTY_NAME:-${ID} ${VERSION_ID}} / ${ARCH}"
 
 # Ensure required tools and runtime dependencies are available
 _missing=()
-command -v curl >/dev/null 2>&1 || _missing+=(curl)
-command -v tar  >/dev/null 2>&1 || _missing+=(tar)
+command -v curl       >/dev/null 2>&1 || _missing+=(curl)
+command -v tar        >/dev/null 2>&1 || _missing+=(tar)
+command -v pkg-config >/dev/null 2>&1 || _missing+=(pkg-config)
 
 case "${ID:-}" in
   ubuntu)
@@ -55,7 +56,8 @@ case "${ID:-}" in
     ;;
   amzn)
     # freetype is not bundled and must be installed from the system
-    _missing+=(freetype)
+    # pkgconf-pkg-config provides pkg-config on Amazon Linux 2023
+    _missing+=(freetype pkgconf-pkg-config)
     echo "Installing dependencies: ${_missing[*]}"
     dnf install -y -q --allowerasing "${_missing[@]}"
     ;;
