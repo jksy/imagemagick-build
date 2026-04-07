@@ -113,11 +113,14 @@ fi
 # Fix pkg-config prefix to match actual installation path
 PC_DIR="${INSTALL_BASE}/imagemagick/${IM_VERSION}/lib/pkgconfig"
 if [[ -d "$PC_DIR" ]]; then
-  if [[ "$USE_SUDO" -eq 1 ]]; then
-    sudo find "$PC_DIR" -name "*.pc" -exec sed -i "s|^prefix=.*|prefix=${INSTALL_BASE}/imagemagick/${IM_VERSION}|" {} +
-  else
-    find "$PC_DIR" -name "*.pc" -exec sed -i "s|^prefix=.*|prefix=${INSTALL_BASE}/imagemagick/${IM_VERSION}|" {} +
-  fi
+  for _pc in "${PC_DIR}"/*.pc; do
+    [[ -f "$_pc" ]] || continue
+    if [[ "$USE_SUDO" -eq 1 ]]; then
+      sudo sed -i "s|^prefix=.*|prefix=${INSTALL_BASE}/imagemagick/${IM_VERSION}|" "$_pc"
+    else
+      sed -i "s|^prefix=.*|prefix=${INSTALL_BASE}/imagemagick/${IM_VERSION}|" "$_pc"
+    fi
+  done
 fi
 
 BIN_DIR="${INSTALL_BASE}/imagemagick/${IM_VERSION}/bin"
