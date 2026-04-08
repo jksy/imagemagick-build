@@ -3,9 +3,9 @@ description: Install dependencies, build all libraries and ImageMagick, and veri
 
 inputs:
   version_file:
-    description: 'Path to version JSON file'
+    description: 'Path to library versions file'
     required: false
-    default: 'versions/default.json'
+    default: 'libraries.json'
   cache_suffix:
     description: 'Cache key suffix to separate build environments (e.g. ubuntu-22.04)'
     required: false

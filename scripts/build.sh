@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # build.sh — Build ImageMagick with all required dependencies
-# Usage: VERSION_FILE=versions/default.json ./scripts/build.sh
+# Usage: LIBRARIES_FILE=libraries.json ./scripts/build.sh
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

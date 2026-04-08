@@ -9,9 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       version_file:
-        description: 'Path to version JSON file'
+        description: 'Path to library versions file'
         required: false
-        default: 'versions/default.json'
+        default: 'libraries.json'
       skip_tests:
         description: 'Skip make check (emergency use only)'
         required: false
@@ -66,7 +66,7 @@ jobs:
         id: build
         uses: ./.github/actions/build-imagemagick
         with:
-          version_file: ${{ github.event.inputs.version_file || 'versions/default.json' }}
+          version_file: ${{ github.event.inputs.version_file || 'libraries.json' }}
           cache_suffix: ${{ matrix.os_tag }}-${{ matrix.arch }}
           skip_tests: ${{ github.event.inputs.skip_tests || 'false' }}
           no_cache: ${{ github.event.inputs.no_cache || 'false' }}
