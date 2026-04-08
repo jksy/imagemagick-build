@@ -85,11 +85,21 @@ jobs:
                bash scripts/package.sh
           ls -lh /tmp/artifacts/
 
+      - name: Generate SBOM
+        run: |
+          for tarball in /tmp/artifacts/*.tar.gz; do
+            sbom="${tarball%.tar.gz}.sbom.json"
+            VERSION_FILE="${{ steps.build.outputs.version_file }}" \
+              OS_TAG=${{ matrix.os_tag }} \
+              ARCH=${{ matrix.arch }} \
+              bash scripts/generate-sbom.sh "$sbom"
+          done
+
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
           name: imagemagick-${{ steps.build.outputs.imagemagick }}-${{ matrix.os_tag }}-${{ matrix.arch }}
-          path: /tmp/artifacts/*.tar.gz
+          path: /tmp/artifacts/
           retention-days: 7
 
   release:
@@ -180,7 +190,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: ImageMagick ${{ steps.versions.outputs.imagemagick }}
           body_path: /tmp/release_body.md
-          files: /tmp/artifacts/*.tar.gz
+          files: /tmp/artifacts/*
           draft: false
           prerelease: false
 
@@ -192,7 +202,7 @@ jobs:
           ROLLING_TAG="v${{ steps.versions.outputs.imagemagick }}"
 
           # Upload new artifacts, overwriting existing ones (-clobber replaces files with same name)
-          gh release upload "${ROLLING_TAG}" /tmp/artifacts/*.tar.gz --clobber
+          gh release upload "${ROLLING_TAG}" /tmp/artifacts/* --clobber
 
           # Update release title and body
           gh release edit "${ROLLING_TAG}" \
