@@ -43,7 +43,7 @@ jobs:
       - name: Read current version
         id: current
         run: |
-          CURRENT=$(jq -r '.imagemagick' versions/default.json)
+          CURRENT=$(jq -r '.[] | select(.key == "imagemagick") | .version' libraries.json)
           echo "version=${CURRENT}" >> "${GITHUB_OUTPUT}"
 
       - name: Check if tag already exists
@@ -70,9 +70,9 @@ jobs:
 
           # 一時ブランチでバージョンを書き換えてタグだけ push（main は変えない）
           git checkout -b "build-${NEW}"
-          jq --arg v "${NEW}" '.imagemagick = $v' versions/default.json \
-            > versions/default.json.tmp && mv versions/default.json.tmp versions/default.json
-          git add versions/default.json
+          jq --arg v "${NEW}" '(.[] | select(.key == "imagemagick") | .version) = $v' libraries.json \
+            > libraries.json.tmp && mv libraries.json.tmp libraries.json
+          git add libraries.json
           git commit -m "chore: build ImageMagick ${NEW}"
           git tag "v${NEW}"
           git push origin "v${NEW}"
@@ -86,11 +86,11 @@ jobs:
         run: |
           NEW="${{ steps.target.outputs.version }}"
           echo "Bumping ImageMagick from ${{ steps.current.outputs.version }} to ${NEW}"
-          jq --arg v "${NEW}" '.imagemagick = $v' versions/default.json \
-            > versions/default.json.tmp && mv versions/default.json.tmp versions/default.json
+          jq --arg v "${NEW}" '(.[] | select(.key == "imagemagick") | .version) = $v' libraries.json \
+            > libraries.json.tmp && mv libraries.json.tmp libraries.json
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add versions/default.json
+          git add libraries.json
           git commit -m "chore: bump ImageMagick to ${NEW}"
           git tag "v${NEW}"
           git pull --rebase origin main
