@@ -60,8 +60,7 @@ clone_or_update() {
 # ---------------------------------------------------------------------------
 # 1. libjpeg-turbo
 # ---------------------------------------------------------------------------
-echo ""
-echo "=== Building libjpeg-turbo ${JPEG_VERSION} ==="
+echo "::group:: Building libjpeg-turbo ${JPEG_VERSION}"
 clone_or_update https://github.com/libjpeg-turbo/libjpeg-turbo.git \
   libjpeg-turbo "${JPEG_VERSION}"
 cmake -S libjpeg-turbo -B libjpeg-turbo/build \
@@ -71,12 +70,12 @@ cmake -S libjpeg-turbo -B libjpeg-turbo/build \
   -DENABLE_STATIC=0
 cmake --build libjpeg-turbo/build -j"${NPROC}"
 cmake --install libjpeg-turbo/build
+echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
 # 2. libpng
 # ---------------------------------------------------------------------------
-echo ""
-echo "=== Building libpng ${PNG_VERSION} ==="
+echo "::group::Building libpng ${PNG_VERSION}"
 clone_or_update https://github.com/glennrp/libpng.git \
   libpng "v${PNG_VERSION}"
 cd libpng
@@ -87,12 +86,12 @@ fi
 make -j"${NPROC}"
 make install
 cd "${BUILD_DIR}"
+echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
 # 3. libtiff
 # ---------------------------------------------------------------------------
-echo ""
-echo "=== Building libtiff ${TIFF_VERSION} ==="
+echo "::group::Building libtiff ${TIFF_VERSION}"
 clone_or_update https://gitlab.com/libtiff/libtiff.git \
   libtiff "v${TIFF_VERSION}"
 cmake -S libtiff -B libtiff/build \
@@ -101,12 +100,12 @@ cmake -S libtiff -B libtiff/build \
   -DBUILD_SHARED_LIBS=ON
 cmake --build libtiff/build -j"${NPROC}"
 cmake --install libtiff/build
+echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
 # 4. lcms2
 # ---------------------------------------------------------------------------
-echo ""
-echo "=== Building lcms2 ${LCMS_VERSION} ==="
+echo "::group::Building lcms2 ${LCMS_VERSION}"
 clone_or_update https://github.com/mm2/Little-CMS.git \
   lcms2 "lcms${LCMS_VERSION}"
 cd lcms2
@@ -117,12 +116,12 @@ fi
 make -j"${NPROC}"
 make install
 cd "${BUILD_DIR}"
+echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
 # 5. libaom
 # ---------------------------------------------------------------------------
-echo ""
-echo "=== Building libaom ${AOM_VERSION} ==="
+echo "::group::Building libaom ${AOM_VERSION}"
 clone_or_update https://aomedia.googlesource.com/aom \
   libaom "v${AOM_VERSION}"
 cmake -S libaom -B libaom/build \
@@ -132,12 +131,12 @@ cmake -S libaom -B libaom/build \
   -DENABLE_TESTS=0
 cmake --build libaom/build -j"${NPROC}"
 cmake --install libaom/build
+echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
 # 6. libwebp
 # ---------------------------------------------------------------------------
-echo ""
-echo "=== Building libwebp ${WEBP_VERSION} ==="
+echo "::group::Building libwebp ${WEBP_VERSION}"
 clone_or_update https://github.com/webmproject/libwebp.git \
   libwebp "v${WEBP_VERSION}"
 cd libwebp
@@ -148,12 +147,12 @@ cd libwebp
 make -j"${NPROC}"
 make install
 cd "${BUILD_DIR}"
+echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
 # 7. libheif
 # ---------------------------------------------------------------------------
-echo ""
-echo "=== Building libheif ${HEIF_VERSION} ==="
+echo "::group::Building libheif ${HEIF_VERSION}"
 clone_or_update https://github.com/strukturag/libheif.git \
   libheif "v${HEIF_VERSION}"
 cmake -S libheif -B libheif/build \
@@ -166,12 +165,12 @@ cmake -S libheif -B libheif/build \
   -DENABLE_TESTING=OFF
 cmake --build libheif/build -j"${NPROC}"
 cmake --install libheif/build
+echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
 # 8. ImageMagick
 # ---------------------------------------------------------------------------
-echo ""
-echo "=== Building ImageMagick ${IM_VERSION} ==="
+echo "::group::Building ImageMagick ${IM_VERSION}"
 clone_or_update https://github.com/ImageMagick/ImageMagick.git \
   imagemagick "${IM_VERSION}"
 cd imagemagick
@@ -191,12 +190,11 @@ cd imagemagick
   PKG_CONFIG_PATH="${PKG_CONFIG_PATH}"
 make -j"${NPROC}"
 make install
+echo "::endgroup::"
 
 if [ "${SKIP_TESTS:-0}" != "1" ]; then
-  echo ""
-  echo "=== Running ImageMagick test suite ==="
+  echo "::group::Running ImageMagick test suite"
   make check VERBOSE=1 || {
-    echo ""
     echo "ERROR: make check failed. Test log:" >&2
     if [ -f tests/test-suite.log ]; then
       cat tests/test-suite.log >&2
@@ -204,10 +202,10 @@ if [ "${SKIP_TESTS:-0}" != "1" ]; then
     exit 1
   }
   echo "=== Test suite passed ==="
+  echo "::endgroup::"
 fi
 
 cd "${BUILD_DIR}"
 
-echo ""
 echo "=== Build complete ==="
 echo "  Installed to: ${PREFIX}"
