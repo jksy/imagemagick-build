@@ -47,6 +47,7 @@ command -v curl       >/dev/null 2>&1 || _missing+=(curl)
 command -v tar        >/dev/null 2>&1 || _missing+=(tar)
 command -v pkg-config >/dev/null 2>&1 || _missing+=(pkg-config)
 
+echo "::group::Installing dependencies"
 case "${ID:-}" in
   ubuntu)
     if [[ ${#_missing[@]} -gt 0 ]]; then
@@ -63,11 +64,13 @@ case "${ID:-}" in
     ;;
 esac
 unset _missing
+echo "::endgroup::"
 
 # Fetch release asset URL (specific version or latest)
 _curl_auth=()
 [[ -n "${GITHUB_TOKEN:-}" ]] && _curl_auth=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
 
+echo "::group::Fetching release from GitHub"
 if [[ -n "${IMAGEMAGICK_VERSION:-}" ]]; then
   IMAGEMAGICK_VERSION="v${IMAGEMAGICK_VERSION#v}"
   echo "Fetching release ${IMAGEMAGICK_VERSION} from GitHub..."
@@ -77,6 +80,7 @@ else
   RELEASE_JSON=$(curl -fsSL "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/releases/latest")
 fi
 unset _curl_auth
+echo "::endgroup::"
 ASSET_URL=$(echo "$RELEASE_JSON" \
   | grep '"browser_download_url"' \
   | grep "${OS_TAG}-${ARCH}" \
@@ -98,6 +102,7 @@ echo "  Destination: ${INSTALL_BASE}/imagemagick/${IM_VERSION}/"
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT
 
+echo "::group::Downloading and extracting archive"
 curl -fsSL --progress-bar -o "${TMP_DIR}/${TARBALL}" "$ASSET_URL"
 
 # Extract (use sudo if INSTALL_BASE is not writable)
@@ -111,8 +116,10 @@ else
   sudo tar -xzf "${TMP_DIR}/${TARBALL}" -C "$INSTALL_BASE"
   USE_SUDO=1
 fi
+echo "::endgroup::"
 
 # Fix pkg-config prefix to match actual installation path
+echo "::group::Fixing pkg-config paths"
 PC_DIR="${INSTALL_BASE}/imagemagick/${IM_VERSION}/lib/pkgconfig"
 if [[ -d "$PC_DIR" ]]; then
   for _pc in "${PC_DIR}"/*.pc; do
@@ -124,6 +131,7 @@ if [[ -d "$PC_DIR" ]]; then
     fi
   done
 fi
+echo "::endgroup::"
 
 BIN_DIR="${INSTALL_BASE}/imagemagick/${IM_VERSION}/bin"
 LIB_DIR="${INSTALL_BASE}/imagemagick/${IM_VERSION}/lib"

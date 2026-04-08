@@ -17,12 +17,13 @@ export LD_LIBRARY_PATH="${PREFIX}/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 
 # Version
 echo ""
-echo "--- magick -version ---"
+echo "::group::magick -version"
 "${MAGICK}" -version
+echo "::endgroup::"
 
 # Format support
 echo ""
-echo "--- Format support ---"
+echo "::group::Format support"
 MISSING=0
 for fmt in JPEG PNG TIFF WEBP AVIF PDF; do
   if "${MAGICK}" -list format | grep -q "^  *${fmt}"; then
@@ -32,6 +33,7 @@ for fmt in JPEG PNG TIFF WEBP AVIF PDF; do
     MISSING=1
   fi
 done
+echo "::endgroup::"
 
 if [ "${MISSING:-0}" = "1" ]; then
   echo ""
@@ -41,12 +43,13 @@ fi
 
 # pkg-config
 echo ""
-echo "--- pkg-config ---"
+echo "::group::pkg-config"
 PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig" pkg-config --modversion MagickCore && echo "  [OK] MagickCore pkg-config"
+echo "::endgroup::"
 
 # Conversion smoke tests
 echo ""
-echo "--- Conversion smoke tests ---"
+echo "::group::Conversion smoke tests"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
@@ -82,6 +85,7 @@ if ! "${MAGICK}" identify "${TMP_DIR}/pdf_page0.png" >/dev/null 2>"${IDENTIFY_ER
   exit 1
 fi
 echo "  [OK] PDF -> PNG"
+echo "::endgroup::"
 
 echo ""
 echo "=== Verification passed ==="

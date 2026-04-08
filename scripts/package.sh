@@ -41,7 +41,7 @@ collect_license() {
   echo "  WARNING: no license file found for ${name} in ${src_dir}"
 }
 
-echo "=== Collecting licenses ==="
+echo "::group::Collecting licenses"
 collect_license "libjpeg-turbo" "${BUILD_DIR}/libjpeg-turbo"
 collect_license "libpng"        "${BUILD_DIR}/libpng"
 collect_license "libtiff"       "${BUILD_DIR}/libtiff"
@@ -50,17 +50,20 @@ collect_license "libaom"        "${BUILD_DIR}/libaom"
 collect_license "libwebp"       "${BUILD_DIR}/libwebp"
 collect_license "libheif"       "${BUILD_DIR}/libheif"
 collect_license "ImageMagick"   "${BUILD_DIR}/imagemagick"
+echo "::endgroup::"
 
 # Create tarball with directory structure: imagemagick/<version>/...
 PARENT="$(dirname "${PREFIX}")"
 BASE="$(basename "${PREFIX}")"
 
+echo "::group::Creating tarball"
 tar -czf "${ARCHIVE_PATH}" \
   -C "${PARENT}" \
   --transform "s|^${BASE}|imagemagick/${IM_VERSION}|" \
   "${BASE}"
 
 echo "  Size   : $(du -sh "${ARCHIVE_PATH}" | cut -f1)"
+echo "::endgroup::"
 echo "=== Package complete: ${ARCHIVE_PATH} ==="
 
 # Export path for use in CI
