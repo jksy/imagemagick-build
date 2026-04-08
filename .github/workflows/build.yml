@@ -16,6 +16,10 @@ on:
         description: 'Skip make check (emergency use only)'
         required: false
         default: 'false'
+      no_cache:
+        description: 'Ignore cached build and force full rebuild'
+        required: false
+        default: 'false'
 
 permissions:
   contents: write
@@ -65,6 +69,7 @@ jobs:
           version_file: ${{ github.event.inputs.version_file || 'versions/default.json' }}
           cache_suffix: ${{ matrix.os_tag }}-${{ matrix.arch }}
           skip_tests: ${{ github.event.inputs.skip_tests || 'false' }}
+          no_cache: ${{ github.event.inputs.no_cache || 'false' }}
 
       - name: Package build
         run: |
