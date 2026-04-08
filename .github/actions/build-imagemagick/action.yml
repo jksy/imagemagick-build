@@ -99,10 +99,13 @@ runs:
           mkdir -p /opt/imagemagick
         fi
 
-    - name: Compute version file hash
+    - name: Compute cache key inputs
       id: version-hash
       shell: bash
-      run: echo "hash=$(sha256sum '${{ inputs.version_file }}' | cut -d' ' -f1)" >> "${GITHUB_OUTPUT}"
+      run: |
+        versions_hash=$(sha256sum '${{ inputs.version_file }}' | cut -d' ' -f1)
+        scripts_hash=$(find scripts/ -name '*.sh' | sort | xargs sha256sum | sha256sum | cut -d' ' -f1)
+        echo "hash=${versions_hash}-${scripts_hash}" >> "${GITHUB_OUTPUT}"
 
     - name: Restore library cache
       id: cache
