@@ -123,6 +123,13 @@ The output tarball will be at `/tmp/artifacts/imagemagick-<version>-ubuntu22.04-
 
 出力ファイルは `/tmp/artifacts/imagemagick-<version>-ubuntu22.04-x86_64.tar.gz` に生成されます。
 
+## Test Data / テストデータ
+
+`testdata/soundboard.heic` は [HEIC Digital](https://heic.digital/) が提供するサンプル画像です。
+HEIC 読み込みのスモークテスト（`scripts/verify.sh`）で使用しています。
+
+> Sample HEIC file courtesy of [HEIC Digital](https://heic.digital/ja/samples/).
+
 ## How Automation Works / 自動化の仕組み
 
 | Workflow | Trigger | Description |

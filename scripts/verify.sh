@@ -2,6 +2,9 @@
 # verify.sh — Verify the ImageMagick build artifacts
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
 PREFIX="${PREFIX:-/opt/imagemagick}"
 MAGICK="${PREFIX}/bin/magick"
 
@@ -85,6 +88,31 @@ if ! "${MAGICK}" identify "${TMP_DIR}/pdf_page0.png" >/dev/null 2>"${IDENTIFY_ER
   exit 1
 fi
 echo "  [OK] PDF -> PNG"
+echo "::endgroup::"
+
+# HEIC read smoke test (decode only — no encoder required)
+echo ""
+echo "::group::HEIC read smoke test"
+HEIC_SAMPLE="${REPO_ROOT}/testdata/soundboard.heic"
+if [ ! -f "${HEIC_SAMPLE}" ]; then
+  echo "  [SKIP] testdata/soundboard.heic not found, skipping HEIC read test" >&2
+else
+  "${MAGICK}" "${HEIC_SAMPLE}" "${TMP_DIR}/heic_to_png.png" 2>"${IDENTIFY_ERR}" || {
+    echo "  [ERROR] Failed to convert HEIC to PNG" >&2
+    cat "${IDENTIFY_ERR}" >&2
+    exit 1
+  }
+  if [ ! -s "${TMP_DIR}/heic_to_png.png" ]; then
+    echo "  [ERROR] HEIC -> PNG produced empty output" >&2
+    exit 1
+  fi
+  if ! "${MAGICK}" identify "${TMP_DIR}/heic_to_png.png" >/dev/null 2>"${IDENTIFY_ERR}"; then
+    echo "  [ERROR] Invalid or unreadable PNG output converted from HEIC" >&2
+    cat "${IDENTIFY_ERR}" >&2
+    exit 1
+  fi
+  echo "  [OK] HEIC -> PNG (soundboard.heic)"
+fi
 echo "::endgroup::"
 
 echo ""
