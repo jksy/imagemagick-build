@@ -79,8 +79,14 @@ fi
 unset _curl_auth
 ASSET_URL=$(echo "$RELEASE_JSON" \
   | grep '"browser_download_url"' \
-  | grep "${OS_TAG}-${ARCH}" \
-  | cut -d'"' -f4)
+  | cut -d'"' -f4 \
+  | grep -E "${OS_TAG}-${ARCH}\.tar\.gz$")
+
+if [[ "$(echo "$ASSET_URL" | wc -l)" -gt 1 ]]; then
+  echo "Error: Multiple matching tarball assets found for ${OS_TAG} ${ARCH}" >&2
+  echo "$ASSET_URL" >&2
+  exit 1
+fi
 
 if [[ -z "$ASSET_URL" ]]; then
   echo "Error: No matching asset found for ${OS_TAG} ${ARCH}" >&2
