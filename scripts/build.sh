@@ -19,7 +19,6 @@ WEBP_VERSION=$(jq -r '.[] | select(.key == "libwebp") | .version' "${LIBRARIES_F
 AOM_VERSION=$(jq -r '.[] | select(.key == "libaom") | .version' "${LIBRARIES_FILE}")
 DE265_VERSION=$(jq -r '.[] | select(.key == "libde265") | .version' "${LIBRARIES_FILE}")
 HEIF_VERSION=$(jq -r '.[] | select(.key == "libheif") | .version' "${LIBRARIES_FILE}")
-HEIF_VERSION=$(jq -r '.libheif'      "${VERSION_FILE}")
 
 echo "=== Build versions ==="
 echo "  ImageMagick : ${IM_VERSION}"

@@ -77,7 +77,7 @@ jobs:
           mkdir -p /tmp/artifacts
           SUDO_CMD="$(command -v sudo 2>/dev/null || true)"
           $SUDO_CMD env \
-               VERSION_FILE="${{ steps.build.outputs.version_file }}" \
+               LIBRARIES_FILE="${{ steps.build.outputs.version_file }}" \
                OS_TAG=${{ matrix.os_tag }} \
                ARCH=${{ matrix.arch }} \
                PREFIX=/opt/imagemagick \
@@ -89,7 +89,7 @@ jobs:
         run: |
           for tarball in /tmp/artifacts/*.tar.gz; do
             sbom="${tarball%.tar.gz}.sbom.json"
-            VERSION_FILE="${{ steps.build.outputs.version_file }}" \
+            LIBRARIES_FILE="${{ steps.build.outputs.version_file }}" \
               OS_TAG=${{ matrix.os_tag }} \
               ARCH=${{ matrix.arch }} \
               bash scripts/generate-sbom.sh "$sbom"
