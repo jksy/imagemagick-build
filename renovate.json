@@ -61,6 +61,15 @@
     {
       "customType": "regex",
       "fileMatch": ["^versions/default\\.json$"],
+      "matchStrings": ["\"libde265\":\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "strukturag/libde265",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "loose",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^versions/default\\.json$"],
       "matchStrings": ["\"libheif\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "strukturag/libheif",
       "datasourceTemplate": "github-releases",

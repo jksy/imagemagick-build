@@ -13,7 +13,7 @@ This repository builds [ImageMagick](https://imagemagick.org/) from source with 
 
 ## Supported Formats / 対応フォーマット
 
-JPEG, PNG, TIFF, WebP, AVIF, PDF
+JPEG, PNG, TIFF, WebP, AVIF, HEIC (read), PDF
 
 ## Bundled Libraries / 同梱ライブラリ
 
@@ -26,6 +26,7 @@ JPEG, PNG, TIFF, WebP, AVIF, PDF
 | lcms2 | 2.16 |
 | libwebp | 1.4.0 |
 | libaom | 3.9.1 |
+| libde265 | 1.0.15 |
 | libheif | 1.18.1 |
 
 > Versions are managed in [`versions/default.json`](versions/default.json).

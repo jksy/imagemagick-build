@@ -25,7 +25,7 @@ echo "::endgroup::"
 echo ""
 echo "::group::Format support"
 MISSING=0
-for fmt in JPEG PNG TIFF WEBP AVIF PDF; do
+for fmt in JPEG PNG TIFF WEBP AVIF HEIC PDF; do
   if "${MAGICK}" -list format | grep -q "^  *${fmt}"; then
     echo "  [OK] ${fmt}"
   else

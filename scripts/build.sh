@@ -17,6 +17,7 @@ TIFF_VERSION=$(jq -r '.libtiff'      "${VERSION_FILE}")
 LCMS_VERSION=$(jq -r '.lcms2'        "${VERSION_FILE}")
 WEBP_VERSION=$(jq -r '.libwebp'      "${VERSION_FILE}")
 AOM_VERSION=$(jq -r '.libaom'        "${VERSION_FILE}")
+DE265_VERSION=$(jq -r '.libde265'    "${VERSION_FILE}")
 HEIF_VERSION=$(jq -r '.libheif'      "${VERSION_FILE}")
 
 echo "=== Build versions ==="
@@ -27,6 +28,7 @@ echo "  libtiff     : ${TIFF_VERSION}"
 echo "  lcms2       : ${LCMS_VERSION}"
 echo "  libwebp     : ${WEBP_VERSION}"
 echo "  libaom      : ${AOM_VERSION}"
+echo "  libde265    : ${DE265_VERSION}"
 echo "  libheif     : ${HEIF_VERSION}"
 
 # ---------------------------------------------------------------------------
@@ -150,7 +152,26 @@ cd "${BUILD_DIR}"
 echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
-# 7. libheif
+# 7. libde265
+# ---------------------------------------------------------------------------
+echo ""
+echo "=== Building libde265 ${DE265_VERSION} ==="
+clone_or_update https://github.com/strukturag/libde265.git \
+  libde265 "v${DE265_VERSION}"
+cd libde265
+if [ ! -f configure ]; then
+  autoreconf -fi
+fi
+./configure --prefix="${PREFIX}" \
+  --enable-shared \
+  --disable-static \
+  --disable-sherlock265
+make -j"${NPROC}"
+make install
+cd "${BUILD_DIR}"
+
+# ---------------------------------------------------------------------------
+# 8. libheif
 # ---------------------------------------------------------------------------
 echo "::group::Building libheif ${HEIF_VERSION}"
 clone_or_update https://github.com/strukturag/libheif.git \
@@ -160,6 +181,7 @@ cmake -S libheif -B libheif/build \
   -DCMAKE_INSTALL_LIBDIR=lib \
   -DWITH_AOM_DECODER=ON \
   -DWITH_AOM_ENCODER=ON \
+  -DWITH_LIBDE265=ON \
   -DWITH_X265=OFF \
   -DWITH_DAV1D=OFF \
   -DENABLE_TESTING=OFF
@@ -168,7 +190,7 @@ cmake --install libheif/build
 echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
-# 8. ImageMagick
+# 9. ImageMagick
 # ---------------------------------------------------------------------------
 echo "::group::Building ImageMagick ${IM_VERSION}"
 clone_or_update https://github.com/ImageMagick/ImageMagick.git \
