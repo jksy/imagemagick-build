@@ -115,17 +115,20 @@ jobs:
       - name: Read versions
         id: versions
         run: |
-          IM_VERSION=$(jq -r '.imagemagick' versions/default.json)
-          {
-            echo "imagemagick=${IM_VERSION}"
-            echo "libjpeg_turbo=$(jq -r '.libjpeg_turbo' versions/default.json)"
-            echo "libpng=$(jq -r '.libpng' versions/default.json)"
-            echo "libtiff=$(jq -r '.libtiff' versions/default.json)"
-            echo "lcms2=$(jq -r '.lcms2' versions/default.json)"
-            echo "libwebp=$(jq -r '.libwebp' versions/default.json)"
-            echo "libaom=$(jq -r '.libaom' versions/default.json)"
-            echo "libheif=$(jq -r '.libheif' versions/default.json)"
-          } >> "${GITHUB_OUTPUT}"
+          # Read all library versions from libraries.json
+          jq -r '.[] | select(.key) | "\(.key)=\(.version)"' libraries.json | while IFS='=' read -r key version; do
+            case "${key}" in
+              imagemagick) echo "imagemagick=${version}" ;;
+              libjpeg_turbo) echo "libjpeg_turbo=${version}" ;;
+              libpng) echo "libpng=${version}" ;;
+              libtiff) echo "libtiff=${version}" ;;
+              lcms2) echo "lcms2=${version}" ;;
+              libwebp) echo "libwebp=${version}" ;;
+              libaom) echo "libaom=${version}" ;;
+              libde265) echo "libde265=${version}" ;;
+              libheif) echo "libheif=${version}" ;;
+            esac
+          done >> "${GITHUB_OUTPUT}"
 
       - name: Detect tag type
         id: tag_type
