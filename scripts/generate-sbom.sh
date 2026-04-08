@@ -5,7 +5,7 @@
 #   VERSION_FILE=<path> OS_TAG=<os> ARCH=<arch> bash scripts/generate-sbom.sh <output.sbom.json>
 #
 # Bundled libraries (compiled from source, included in tarball):
-#   ImageMagick, libjpeg-turbo, libpng, libtiff, lcms2, libwebp, libaom, libheif
+#   ImageMagick, libjpeg-turbo, libpng, libtiff, lcms2, libwebp, libaom, libde265, libheif
 #
 # System runtime dependencies (NOT bundled, scope=optional):
 #   ghostscript (PDF support), freetype, zlib
@@ -73,6 +73,12 @@ jq -n \
         name:    "libaom",
         version: $v.libaom,
         purl:    ("pkg:github/AOMediaCodec/libaom@" + $v.libaom)
+      },
+      {
+        type:    "library",
+        name:    "libde265",
+        version: $v.libde265,
+        purl:    ("pkg:github/strukturag/libde265@" + $v.libde265)
       },
       {
         type:    "library",
