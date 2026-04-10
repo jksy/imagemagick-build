@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'file=$(jq -r \".tool_input.file_path // empty\"); if [[ \"$file\" == */.github/workflows/*.yml || \"$file\" == */.github/workflows/*.yaml || \"$file\" == */.github/actions/*/*.yml || \"$file\" == */.github/actions/*/*.yaml ]]; then actionlint \"$file\"; fi'"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'file=$(jq -r \".tool_input.file_path // empty\"); if [[ \"$file\" == *.sh ]]; then shellcheck \"$file\"; fi'"
+          }
+        ]
+      }
+    ]
+  }
+}
