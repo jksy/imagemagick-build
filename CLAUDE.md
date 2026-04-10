@@ -12,16 +12,6 @@ ImageMagickを必要なライブラリごとソースからビルドし、Ubuntu
 - `install.sh` — エンドユーザー向けワンライナーインストールスクリプト。
 - `.github/actions/build-imagemagick/action.yml` — ビルドを担う再利用可能コンポジットアクション。
 
-## Workflows
-
-| ファイル | トリガー | 目的 |
-|---|---|---|
-| `ci.yml` | PR to main | actionlint + マルチプラットフォームビルドテスト |
-| `build.yml` | タグ push / main push / 手動 | ビルド・リリース・SLSA provenance生成 |
-| `check-new-version.yml` | 毎週月曜 / 手動 | ImageMagick新バージョン検出・自動タグ付け |
-| `rebuild-on-library-update.yml` | main pushでlibraries.json変更時 | Renovate更新後の自動リビルド |
-| `test-installer.yml` | install.sh変更PR / 手動 | install.shの各OS動作確認 |
-
 ## リリースタグ命名規則
 
 - `vX.Y.Z-N` — 通常リリース (例: `v7.1.2-18-1`)。`-N` はビルド番号。
@@ -51,9 +41,3 @@ gh pr checks <PR番号>
 gh release list --limit 5
 ```
 
-## Hooks (自動実行)
-
-`.claude/settings.local.json` に以下のフックが設定されている:
-
-- **actionlint**: `.github/workflows/` または `.github/actions/` 以下のYAMLファイル保存時に自動実行
-- **shellcheck**: `.sh` ファイル保存時に自動実行
