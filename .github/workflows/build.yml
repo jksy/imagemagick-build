@@ -107,7 +107,7 @@ jobs:
       - name: Compute SHA256
         run: |
           cd /tmp/artifacts
-          sha256sum *.tar.gz > /tmp/sha256sums.txt
+          sha256sum ./*.tar.gz > /tmp/sha256sums.txt
           cat /tmp/sha256sums.txt
 
       - name: Upload SHA256
