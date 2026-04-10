@@ -158,17 +158,12 @@ echo ""
 echo "=== Building libde265 ${DE265_VERSION} ==="
 clone_or_update https://github.com/strukturag/libde265.git \
   libde265 "v${DE265_VERSION}"
-cd libde265
-if [ ! -f configure ]; then
-  autoreconf -fi
-fi
-./configure --prefix="${PREFIX}" \
-  --enable-shared \
-  --disable-static \
-  --disable-sherlock265
-make -j"${NPROC}"
-make install
-cd "${BUILD_DIR}"
+cmake -S libde265 -B libde265/build \
+  -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+  -DCMAKE_INSTALL_LIBDIR=lib \
+  -DENABLE_SDL=OFF
+cmake --build libde265/build -j"${NPROC}"
+cmake --install libde265/build
 
 # ---------------------------------------------------------------------------
 # 8. libheif
