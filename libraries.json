@@ -1,0 +1,92 @@
+[
+  {
+    "key": "imagemagick",
+    "name": "ImageMagick",
+    "version": "7.1.2-18",
+    "purl_base": "pkg:github/ImageMagick/ImageMagick",
+    "bundled": true,
+    "repo": "https://github.com/ImageMagick/ImageMagick.git"
+  },
+  {
+    "key": "libjpeg_turbo",
+    "name": "libjpeg-turbo",
+    "version": "3.1.4.1",
+    "purl_base": "pkg:github/libjpeg-turbo/libjpeg-turbo",
+    "bundled": true,
+    "repo": "https://github.com/libjpeg-turbo/libjpeg-turbo.git"
+  },
+  {
+    "key": "libpng",
+    "name": "libpng",
+    "version": "1.6.43",
+    "purl_base": "pkg:github/glennrp/libpng",
+    "bundled": true,
+    "repo": "https://github.com/glennrp/libpng.git"
+  },
+  {
+    "key": "libtiff",
+    "name": "libtiff",
+    "version": "4.7.1",
+    "purl_base": "pkg:gitlab/libtiff/libtiff",
+    "bundled": true,
+    "repo": "https://gitlab.com/libtiff/libtiff.git"
+  },
+  {
+    "key": "lcms2",
+    "name": "lcms2",
+    "version": "2.18",
+    "purl_base": "pkg:github/mm2/Little-CMS",
+    "bundled": true,
+    "repo": "https://github.com/mm2/Little-CMS.git"
+  },
+  {
+    "key": "libwebp",
+    "name": "libwebp",
+    "version": "1.4.0",
+    "purl_base": "pkg:github/webmproject/libwebp",
+    "bundled": true,
+    "repo": "https://github.com/webmproject/libwebp.git"
+  },
+  {
+    "key": "libaom",
+    "name": "libaom",
+    "version": "3.13.3",
+    "purl_base": "pkg:github/AOMediaCodec/libaom",
+    "bundled": true,
+    "repo": "https://aomedia.googlesource.com/aom"
+  },
+  {
+    "key": "libde265",
+    "name": "libde265",
+    "version": "1.0.15",
+    "purl_base": "pkg:github/strukturag/libde265",
+    "bundled": true,
+    "repo": "https://github.com/strukturag/libde265.git"
+  },
+  {
+    "key": "libheif",
+    "name": "libheif",
+    "version": "1.21.2",
+    "purl_base": "pkg:github/strukturag/libheif",
+    "bundled": true,
+    "repo": "https://github.com/strukturag/libheif.git"
+  },
+  {
+    "name": "ghostscript",
+    "bundled": false,
+    "scope": "optional",
+    "description": "System-provided runtime dependency for PDF support. Not bundled in the tarball; version depends on the host OS."
+  },
+  {
+    "name": "freetype",
+    "bundled": false,
+    "scope": "optional",
+    "description": "System-provided runtime dependency. Not bundled in the tarball."
+  },
+  {
+    "name": "zlib",
+    "bundled": false,
+    "scope": "optional",
+    "description": "System-provided runtime dependency. Not bundled in the tarball."
+  }
+]

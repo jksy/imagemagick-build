@@ -4,10 +4,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-VERSION_FILE="${VERSION_FILE:-${REPO_ROOT}/versions/default.json}"
+LIBRARIES_FILE="${LIBRARIES_FILE:-${REPO_ROOT}/libraries.json}"
 
 PREFIX="${PREFIX:-/opt/imagemagick}"
-IM_VERSION=$(jq -r '.imagemagick' "${VERSION_FILE}")
+IM_VERSION=$(jq -r '.[] | select(.key == "imagemagick") | .version' "${LIBRARIES_FILE}")
 OS_TAG="${OS_TAG:-ubuntu22.04}"
 ARCH="${ARCH:-$(uname -m)}"
 

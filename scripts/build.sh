@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
 # build.sh — Build ImageMagick with all required dependencies
-# Usage: VERSION_FILE=versions/default.json ./scripts/build.sh
+# Usage: LIBRARIES_FILE=libraries.json ./scripts/build.sh
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-VERSION_FILE="${VERSION_FILE:-${REPO_ROOT}/versions/default.json}"
+LIBRARIES_FILE="${LIBRARIES_FILE:-${REPO_ROOT}/libraries.json}"
 
 # ---------------------------------------------------------------------------
-# Parse versions
+# Parse versions from libraries.json
 # ---------------------------------------------------------------------------
-IM_VERSION=$(jq -r '.imagemagick'    "${VERSION_FILE}")
-JPEG_VERSION=$(jq -r '.libjpeg_turbo' "${VERSION_FILE}")
-PNG_VERSION=$(jq -r '.libpng'        "${VERSION_FILE}")
-TIFF_VERSION=$(jq -r '.libtiff'      "${VERSION_FILE}")
-LCMS_VERSION=$(jq -r '.lcms2'        "${VERSION_FILE}")
-WEBP_VERSION=$(jq -r '.libwebp'      "${VERSION_FILE}")
-AOM_VERSION=$(jq -r '.libaom'        "${VERSION_FILE}")
-DE265_VERSION=$(jq -r '.libde265'    "${VERSION_FILE}")
-HEIF_VERSION=$(jq -r '.libheif'      "${VERSION_FILE}")
+IM_VERSION=$(jq -r '.[] | select(.key == "imagemagick") | .version' "${LIBRARIES_FILE}")
+JPEG_VERSION=$(jq -r '.[] | select(.key == "libjpeg_turbo") | .version' "${LIBRARIES_FILE}")
+PNG_VERSION=$(jq -r '.[] | select(.key == "libpng") | .version' "${LIBRARIES_FILE}")
+TIFF_VERSION=$(jq -r '.[] | select(.key == "libtiff") | .version' "${LIBRARIES_FILE}")
+LCMS_VERSION=$(jq -r '.[] | select(.key == "lcms2") | .version' "${LIBRARIES_FILE}")
+WEBP_VERSION=$(jq -r '.[] | select(.key == "libwebp") | .version' "${LIBRARIES_FILE}")
+AOM_VERSION=$(jq -r '.[] | select(.key == "libaom") | .version' "${LIBRARIES_FILE}")
+DE265_VERSION=$(jq -r '.[] | select(.key == "libde265") | .version' "${LIBRARIES_FILE}")
+HEIF_VERSION=$(jq -r '.[] | select(.key == "libheif") | .version' "${LIBRARIES_FILE}")
 
 echo "=== Build versions ==="
 echo "  ImageMagick : ${IM_VERSION}"

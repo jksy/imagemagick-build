@@ -3,9 +3,9 @@ description: Install dependencies, build all libraries and ImageMagick, and veri
 
 inputs:
   version_file:
-    description: 'Path to version JSON file'
+    description: 'Path to library versions file'
     required: false
-    default: 'versions/default.json'
+    default: 'libraries.json'
   cache_suffix:
     description: 'Cache key suffix to separate build environments (e.g. ubuntu-22.04)'
     required: false
@@ -85,7 +85,7 @@ runs:
       shell: bash
       run: |
         VERSION_FILE="${{ inputs.version_file }}"
-        IM_VERSION=$(jq -r '.imagemagick' "${VERSION_FILE}")
+        IM_VERSION=$(jq -r '.[] | select(.key == "imagemagick") | .version' "${VERSION_FILE}")
         echo "imagemagick=${IM_VERSION}" >> "${GITHUB_OUTPUT}"
         echo "version_file=${VERSION_FILE}" >> "${GITHUB_OUTPUT}"
 
@@ -123,7 +123,7 @@ runs:
         SKIP_TESTS: ${{ inputs.skip_tests == 'true' && '1' || '0' }}
       run: |
         chmod +x scripts/build.sh
-        VERSION_FILE="${{ inputs.version_file }}" \
+        LIBRARIES_FILE="${{ inputs.version_file }}" \
              BUILD_DIR=/tmp/imagemagick-build \
              bash scripts/build.sh
 
