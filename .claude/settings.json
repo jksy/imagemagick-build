@@ -18,6 +18,15 @@
             "command": "bash -c 'file=$(jq -r \".tool_input.file_path // empty\"); if [[ \"$file\" == *.sh ]]; then shellcheck \"$file\"; fi'"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'file=$(jq -r \".tool_input.file_path // empty\"); if [[ \"$file\" == */libraries.json ]]; then jq . \"$file\" > /dev/null && echo \"libraries.json: valid JSON\" || echo \"libraries.json: INVALID JSON\"; fi'"
+          }
+        ]
       }
     ]
   }
