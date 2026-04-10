@@ -107,14 +107,14 @@ jobs:
       - name: Compute SHA256
         run: |
           cd /tmp/artifacts
-          sha256sum ./*.tar.gz > /tmp/sha256sums.txt
-          cat /tmp/sha256sums.txt
+          sha256sum ./*.tar.gz > /tmp/sha256-${{ matrix.os_tag }}-${{ matrix.arch }}.txt
+          cat /tmp/sha256-${{ matrix.os_tag }}-${{ matrix.arch }}.txt
 
       - name: Upload SHA256
         uses: actions/upload-artifact@v7
         with:
           name: sha256-${{ matrix.os_tag }}-${{ matrix.arch }}
-          path: /tmp/sha256sums.txt
+          path: /tmp/sha256-${{ matrix.os_tag }}-${{ matrix.arch }}.txt
           retention-days: 7
 
   aggregate-hashes:
@@ -256,7 +256,7 @@ jobs:
       actions: read
       id-token: write
       contents: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@5a775b367a56d5bd118a224a811bba288150a563
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
     with:
       base64-subjects: "${{ needs.aggregate-hashes.outputs.base64-subjects }}"
       upload-assets: true
