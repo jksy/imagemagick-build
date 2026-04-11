@@ -18,45 +18,13 @@ echo "=== Packaging ImageMagick ${IM_VERSION} ==="
 echo "  Source : ${PREFIX}"
 echo "  Archive: ${ARCHIVE_PATH}"
 
-# Collect license files from source directories into LICENSES/ inside PREFIX
-BUILD_DIR="${BUILD_DIR:-/tmp/imagemagick-build}"
-LICENSES_DIR="${PREFIX}/LICENSES"
-mkdir -p "${LICENSES_DIR}"
 VERSIONS_FILE="${PREFIX}/VERSIONS"
-trap 'rm -rf "${LICENSES_DIR}" "${VERSIONS_FILE}"' EXIT
+trap 'rm -rf "${VERSIONS_FILE}"' EXIT
 
 echo "::group::Generating VERSIONS file"
 jq -r '.[] | select(.bundled == true) | "\(.name)=\(.version)"' "${LIBRARIES_FILE}" \
   > "${VERSIONS_FILE}"
 cat "${VERSIONS_FILE}"
-echo "::endgroup::"
-
-collect_license() {
-  local name="$1"
-  local src_dir="$2"
-  if [ ! -d "${src_dir}" ]; then
-    echo "  WARNING: source dir not found, skipping license for ${name}: ${src_dir}"
-    return
-  fi
-  for fname in LICENSE LICENSE.md LICENSE.txt COPYING COPYING.txt NOTICE NOTICE.md COPYRIGHT; do
-    if [ -f "${src_dir}/${fname}" ]; then
-      cp "${src_dir}/${fname}" "${LICENSES_DIR}/${name}.txt"
-      echo "  License: ${name} (${fname})"
-      return
-    fi
-  done
-  echo "  WARNING: no license file found for ${name} in ${src_dir}"
-}
-
-echo "::group::Collecting licenses"
-collect_license "libjpeg-turbo" "${BUILD_DIR}/libjpeg-turbo"
-collect_license "libpng"        "${BUILD_DIR}/libpng"
-collect_license "libtiff"       "${BUILD_DIR}/libtiff"
-collect_license "lcms2"         "${BUILD_DIR}/lcms2"
-collect_license "libaom"        "${BUILD_DIR}/libaom"
-collect_license "libwebp"       "${BUILD_DIR}/libwebp"
-collect_license "libheif"       "${BUILD_DIR}/libheif"
-collect_license "ImageMagick"   "${BUILD_DIR}/imagemagick"
 echo "::endgroup::"
 
 # Create tarball with directory structure: imagemagick/<version>/...
