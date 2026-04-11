@@ -224,5 +224,39 @@ fi
 
 cd "${BUILD_DIR}"
 
+# ---------------------------------------------------------------------------
+# Collect license files into PREFIX/LICENSES (persisted in cache)
+# ---------------------------------------------------------------------------
+LICENSES_DIR="${PREFIX}/LICENSES"
+mkdir -p "${LICENSES_DIR}"
+
+collect_license() {
+  local name="$1"
+  local src_dir="$2"
+  if [ ! -d "${src_dir}" ]; then
+    echo "  WARNING: source dir not found, skipping license for ${name}: ${src_dir}"
+    return
+  fi
+  for fname in LICENSE LICENSE.md LICENSE.txt COPYING COPYING.txt NOTICE NOTICE.md COPYRIGHT; do
+    if [ -f "${src_dir}/${fname}" ]; then
+      cp "${src_dir}/${fname}" "${LICENSES_DIR}/${name}.txt"
+      echo "  License: ${name} (${fname})"
+      return
+    fi
+  done
+  echo "  WARNING: no license file found for ${name} in ${src_dir}"
+}
+
+echo "::group::Collecting licenses"
+collect_license "libjpeg-turbo" "${BUILD_DIR}/libjpeg-turbo"
+collect_license "libpng"        "${BUILD_DIR}/libpng"
+collect_license "libtiff"       "${BUILD_DIR}/libtiff"
+collect_license "lcms2"         "${BUILD_DIR}/lcms2"
+collect_license "libaom"        "${BUILD_DIR}/libaom"
+collect_license "libwebp"       "${BUILD_DIR}/libwebp"
+collect_license "libheif"       "${BUILD_DIR}/libheif"
+collect_license "ImageMagick"   "${BUILD_DIR}/imagemagick"
+echo "::endgroup::"
+
 echo "=== Build complete ==="
 echo "  Installed to: ${PREFIX}"
