@@ -22,7 +22,14 @@ echo "  Archive: ${ARCHIVE_PATH}"
 BUILD_DIR="${BUILD_DIR:-/tmp/imagemagick-build}"
 LICENSES_DIR="${PREFIX}/LICENSES"
 mkdir -p "${LICENSES_DIR}"
-trap 'rm -rf "${LICENSES_DIR}"' EXIT
+VERSIONS_FILE="${PREFIX}/VERSIONS"
+trap 'rm -rf "${LICENSES_DIR}" "${VERSIONS_FILE}"' EXIT
+
+echo "::group::Generating VERSIONS file"
+jq -r '.[] | select(.bundled == true) | "\(.name)=\(.version)"' "${LIBRARIES_FILE}" \
+  > "${VERSIONS_FILE}"
+cat "${VERSIONS_FILE}"
+echo "::endgroup::"
 
 collect_license() {
   local name="$1"
