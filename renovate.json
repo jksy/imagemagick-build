@@ -1,12 +1,14 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base"],
+  "extends": ["config:recommended"],
   "enabledManagers": ["github-actions", "custom.regex"],
   "ignoreDeps": ["imagemagick"],
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^libraries\\.json$"],
+      "managerFilePatterns": [
+        "/^libraries\\.json$/"
+      ],
       "matchStrings": ["\"key\":\\s*\"libjpeg_turbo\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "libjpeg-turbo/libjpeg-turbo",
       "datasourceTemplate": "github-releases",
@@ -14,7 +16,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^libraries\\.json$"],
+      "managerFilePatterns": [
+        "/^libraries\\.json$/"
+      ],
       "matchStrings": ["\"key\":\\s*\"libpng\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "glennrp/libpng",
       "datasourceTemplate": "github-releases",
@@ -23,7 +27,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^libraries\\.json$"],
+      "managerFilePatterns": [
+        "/^libraries\\.json$/"
+      ],
       "matchStrings": ["\"key\":\\s*\"libtiff\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "libtiff/libtiff",
       "datasourceTemplate": "gitlab-releases",
@@ -33,7 +39,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^libraries\\.json$"],
+      "managerFilePatterns": [
+        "/^libraries\\.json$/"
+      ],
       "matchStrings": ["\"key\":\\s*\"lcms2\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "mm2/Little-CMS",
       "datasourceTemplate": "github-releases",
@@ -42,7 +50,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^libraries\\.json$"],
+      "managerFilePatterns": [
+        "/^libraries\\.json$/"
+      ],
       "matchStrings": ["\"key\":\\s*\"libwebp\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "webmproject/libwebp",
       "datasourceTemplate": "github-releases",
@@ -51,7 +61,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^libraries\\.json$"],
+      "managerFilePatterns": [
+        "/^libraries\\.json$/"
+      ],
       "matchStrings": ["\"key\":\\s*\"libaom\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "https://aomedia.googlesource.com/aom",
       "datasourceTemplate": "git-tags",
@@ -60,7 +72,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^libraries\\.json$"],
+      "managerFilePatterns": [
+        "/^libraries\\.json$/"
+      ],
       "matchStrings": ["\"key\":\\s*\"libde265\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "strukturag/libde265",
       "datasourceTemplate": "github-releases",
@@ -69,7 +83,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^libraries\\.json$"],
+      "managerFilePatterns": [
+        "/^libraries\\.json$/"
+      ],
       "matchStrings": ["\"key\":\\s*\"libheif\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "strukturag/libheif",
       "datasourceTemplate": "github-releases",
