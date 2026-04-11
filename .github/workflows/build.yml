@@ -199,6 +199,29 @@ jobs:
           draft: false
           prerelease: false
 
+      - name: Verify archive contents
+        run: |
+          echo "::group::Verifying archive contents"
+          fail=0
+          for archive in /tmp/artifacts/*.tar.gz; do
+            echo "--- ${archive##*/} ---"
+            license_count=$(tar -tzf "${archive}" | grep -cE 'LICENSES/.+\.txt$' || true)
+            if [ "${license_count}" -eq 0 ]; then
+              echo "  ERROR: no license files found" >&2
+              fail=1
+            else
+              echo "  OK: ${license_count} license file(s)"
+            fi
+            if tar -tzf "${archive}" | grep -qE 'VERSIONS$'; then
+              echo "  OK: VERSIONS file found"
+            else
+              echo "  ERROR: VERSIONS file not found" >&2
+              fail=1
+            fi
+          done
+          echo "::endgroup::"
+          exit "${fail}"
+
       - name: Update rolling release
         if: steps.tag_type.outputs.is_dated == 'true'
         env:
