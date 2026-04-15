@@ -2,7 +2,7 @@
   {
     "key": "imagemagick",
     "name": "ImageMagick",
-    "version": "7.1.2-18",
+    "version": "7.1.2-19",
     "purl_base": "pkg:github/ImageMagick/ImageMagick",
     "bundled": true,
     "repo": "https://github.com/ImageMagick/ImageMagick.git"
