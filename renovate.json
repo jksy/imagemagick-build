@@ -95,6 +95,7 @@
   ],
   "packageRules": [
     {
+      "description": "Ubuntu versions in test-installer.yml are intentional test matrix entries (test targets), not dependency updates",
       "matchFileNames": [".github/workflows/test-installer.yml"],
       "matchDepPatterns": ["^ubuntu"],
       "enabled": false
