@@ -20,14 +20,14 @@ JPEG, PNG, TIFF, WebP, AVIF, HEIC (read), PDF
 | Library | Version |
 |---|---|
 | ImageMagick | 7.1.2-18 |
-| libjpeg-turbo | 3.0.3 |
+| libjpeg-turbo | 3.1.4.1 |
 | libpng | 1.6.43 |
-| libtiff | 4.7.0 |
-| lcms2 | 2.16 |
+| libtiff | 4.7.1 |
+| lcms2 | 2.18 |
 | libwebp | 1.4.0 |
-| libaom | 3.9.1 |
-| libde265 | 1.0.15 |
-| libheif | 1.18.1 |
+| libaom | 3.13.3 |
+| libde265 | 1.0.18 |
+| libheif | 1.21.2 |
 
 > Versions are managed in [`libraries.json`](libraries.json).
 
