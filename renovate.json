@@ -95,6 +95,11 @@
   ],
   "packageRules": [
     {
+      "matchFileNames": [".github/workflows/test-installer.yml"],
+      "matchDepPatterns": ["^ubuntu"],
+      "enabled": false
+    },
+    {
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions"
     },
