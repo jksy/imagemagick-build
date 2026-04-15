@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   check:
@@ -77,25 +78,31 @@ jobs:
           git tag "v${NEW}"
           git push origin "v${NEW}"
 
-      # --- 自動検出: main を更新してタグを打つ ---
+      # --- 自動検出: ブランチ+PR で main を更新してタグを打つ ---
       - name: Bump to latest version (auto)
         if: |
           steps.target.outputs.manual == 'false' &&
           steps.tag_check.outputs.exists == 'false' &&
           steps.target.outputs.version != steps.current.outputs.version
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           NEW="${{ steps.target.outputs.version }}"
+          BRANCH="bump/imagemagick-${NEW}"
           echo "Bumping ImageMagick from ${{ steps.current.outputs.version }} to ${NEW}"
-          jq --arg v "${NEW}" '(.[] | select(.key == "imagemagick") | .version) = $v' libraries.json \
-            > libraries.json.tmp && mv libraries.json.tmp libraries.json
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${BRANCH}"
+          jq --arg v "${NEW}" '(.[] | select(.key == "imagemagick") | .version) = $v' libraries.json \
+            > libraries.json.tmp && mv libraries.json.tmp libraries.json
           git add libraries.json
           git commit -m "chore: bump ImageMagick to ${NEW}"
-          git tag "v${NEW}"
-          git pull --rebase origin main
-          git push origin main
-          git push origin "v${NEW}"
+          git push origin "${BRANCH}"
+          gh pr create \
+            --title "chore: bump ImageMagick to ${NEW}" \
+            --body "ImageMagick ${NEW} が公開されたため、自動バージョンアップします。" \
+            --base main \
+            --head "${BRANCH}"
 
       - name: No update needed
         if: steps.tag_check.outputs.exists == 'true'

@@ -25,15 +25,18 @@ jobs:
           IM_VERSION=$(jq -r '.[] | select(.key == "imagemagick") | .version' libraries.json)
           echo "im_version=${IM_VERSION}" >> "${GITHUB_OUTPUT}"
 
-          # If the imagemagick version itself changed, this is an IM bump committed by
-          # check-new-version.yml — that workflow already handles tag creation, so skip here.
+          # If the imagemagick version itself changed, create the v{IM_VERSION} tag here
+          # so that the release build is triggered only after the PR is merged to main.
           PREV_IM=$(git show HEAD~1:libraries.json 2>/dev/null \
             | jq -r '.[] | select(.key == "imagemagick") | .version' 2>/dev/null || echo "")
           if [ "${PREV_IM}" != "${IM_VERSION}" ]; then
             echo "is_library_update=false" >> "${GITHUB_OUTPUT}"
-            echo "ImageMagick version changed (${PREV_IM} → ${IM_VERSION}) — check-new-version.yml handles this"
+            echo "is_im_bump=true" >> "${GITHUB_OUTPUT}"
+            echo "ImageMagick version changed (${PREV_IM} → ${IM_VERSION}) — will create release tag"
             exit 0
           fi
+
+          echo "is_im_bump=false" >> "${GITHUB_OUTPUT}"
 
           # IM version is unchanged. If v{IM_VERSION} tag already exists,
           # this is a library-only rebuild.
@@ -44,6 +47,16 @@ jobs:
             echo "is_library_update=false" >> "${GITHUB_OUTPUT}"
             echo "Tag v${IM_VERSION} does not exist yet — skipping"
           fi
+
+      - name: Create release tag for ImageMagick bump
+        if: steps.check.outputs.is_im_bump == 'true'
+        run: |
+          IM_VERSION="${{ steps.check.outputs.im_version }}"
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v${IM_VERSION}"
+          git push origin "v${IM_VERSION}"
+          echo "Created release tag: v${IM_VERSION}"
 
       - name: Create snapshot tag
         if: steps.check.outputs.is_library_update == 'true'
