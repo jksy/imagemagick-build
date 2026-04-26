@@ -18,7 +18,7 @@
   {
     "key": "libpng",
     "name": "libpng",
-    "version": "1.6.43",
+    "version": "1.6.58",
     "purl_base": "pkg:github/glennrp/libpng",
     "bundled": true,
     "repo": "https://github.com/glennrp/libpng.git"
@@ -42,7 +42,7 @@
   {
     "key": "libwebp",
     "name": "libwebp",
-    "version": "1.4.0",
+    "version": "1.6.0",
     "purl_base": "pkg:github/webmproject/libwebp",
     "bundled": true,
     "repo": "https://github.com/webmproject/libwebp.git"
