@@ -54,8 +54,8 @@
         "/^libraries\\.json$/"
       ],
       "matchStrings": ["\"key\":\\s*\"libwebp\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
-      "depNameTemplate": "webmproject/libwebp",
-      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "https://github.com/webmproject/libwebp",
+      "datasourceTemplate": "git-tags",
       "versioningTemplate": "loose",
       "extractVersionTemplate": "^v?(?<version>.+)$"
     },
