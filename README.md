@@ -21,10 +21,10 @@ JPEG, PNG, TIFF, WebP, AVIF, HEIC (read), PDF
 |---|---|
 | ImageMagick | 7.1.2-18 |
 | libjpeg-turbo | 3.1.4.1 |
-| libpng | 1.6.43 |
+| libpng | 1.6.58 |
 | libtiff | 4.7.1 |
-| lcms2 | 2.18 |
-| libwebp | 1.4.0 |
+| lcms2 | 2.19 |
+| libwebp | 1.6.0 |
 | libaom | 3.13.3 |
 | libde265 | 1.0.18 |
 | libheif | 1.21.2 |
