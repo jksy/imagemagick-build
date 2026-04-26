@@ -20,8 +20,8 @@
         "/^libraries\\.json$/"
       ],
       "matchStrings": ["\"key\":\\s*\"libpng\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
-      "depNameTemplate": "glennrp/libpng",
-      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "https://github.com/glennrp/libpng",
+      "datasourceTemplate": "git-tags",
       "versioningTemplate": "loose",
       "extractVersionTemplate": "^v?(?<version>.+)$"
     },
