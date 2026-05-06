@@ -34,7 +34,7 @@
   {
     "key": "lcms2",
     "name": "lcms2",
-    "version": "2.19",
+    "version": "2.19.1",
     "purl_base": "pkg:github/mm2/Little-CMS",
     "bundled": true,
     "repo": "https://github.com/mm2/Little-CMS.git"
