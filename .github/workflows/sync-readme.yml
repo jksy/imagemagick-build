@@ -1,0 +1,37 @@
+name: Sync README on libraries.json change
+
+on:
+  pull_request:
+    paths:
+      - 'libraries.json'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Auto-sync README.md to libraries.json
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Run sync-readme.sh
+        run: bash scripts/sync-readme.sh
+
+      - name: Commit and push if README changed
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if git diff --quiet README.md; then
+            echo "README.md is already in sync."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "chore: sync README.md with libraries.json"
+          git push origin "HEAD:${HEAD_REF}"
