@@ -1,7 +1,13 @@
 name: Sync README on libraries.json change
 
+# SECURITY: This workflow uses `pull_request_target`, which runs in the context of
+# the base branch with access to secrets. We therefore execute only trusted code
+# (the script and README from the base ref) and never check out the PR head.
+# We pull only `libraries.json` from the PR via `git fetch` so the PR cannot
+# influence which code runs.
+
 on:
-  pull_request:
+  pull_request_target:
     paths:
       - 'libraries.json'
 
@@ -14,15 +20,23 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Checkout base ref (trusted)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.event.pull_request.base.ref }}
           token: ${{ secrets.GH_PAT }}
 
-      - name: Run sync-readme.sh
+      - name: Pull libraries.json from PR head
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          git fetch origin "pull/${PR_NUMBER}/head"
+          git checkout FETCH_HEAD -- libraries.json
+
+      - name: Regenerate README from PR's libraries.json
         run: bash scripts/sync-readme.sh
 
-      - name: Commit and push if README changed
+      - name: Push README change to PR branch
         env:
           HEAD_REF: ${{ github.head_ref }}
         run: |
@@ -30,6 +44,14 @@ jobs:
             echo "README.md is already in sync."
             exit 0
           fi
+
+          NEW_README_TMP=$(mktemp)
+          cp README.md "${NEW_README_TMP}"
+
+          git fetch origin "${HEAD_REF}"
+          git checkout -B "${HEAD_REF}" "origin/${HEAD_REF}"
+          cp "${NEW_README_TMP}" README.md
+
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md

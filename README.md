@@ -63,7 +63,7 @@ curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install
 Download the tarball for your Ubuntu version from the [Releases page](https://github.com/jksy/imagemagick-build/releases), then extract and set environment variables:
 
 ```bash
-# Example for Ubuntu 22.04 — replace <version> with the release version, e.g. 7.1.2-21
+# Example for Ubuntu 22.04 — replace <version> with the release version from the Releases page (format: X.Y.Z-N)
 tar -xzf imagemagick-<version>-ubuntu22.04-x86_64.tar.gz -C /opt
 
 export PATH="/opt/imagemagick/<version>/bin:$PATH"
@@ -78,7 +78,7 @@ magick -version
 [Releases ページ](https://github.com/jksy/imagemagick-build/releases) から対象の Ubuntu バージョン向けアーカイブをダウンロードし、展開して環境変数を設定するだけで使えます。
 
 ```bash
-# Ubuntu 22.04 の例 — <version> は実際のリリースバージョン (例: 7.1.2-21) に置き換えてください
+# Ubuntu 22.04 の例 — <version> は [Releases ページ](https://github.com/jksy/imagemagick-build/releases) のリリースバージョン (形式: X.Y.Z-N) に置き換えてください
 tar -xzf imagemagick-<version>-ubuntu22.04-x86_64.tar.gz -C /opt
 
 export PATH="/opt/imagemagick/<version>/bin:$PATH"
