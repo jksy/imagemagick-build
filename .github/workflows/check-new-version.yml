@@ -73,7 +73,8 @@ jobs:
           git checkout -b "build-${NEW}"
           jq --arg v "${NEW}" '(.[] | select(.key == "imagemagick") | .version) = $v' libraries.json \
             > libraries.json.tmp && mv libraries.json.tmp libraries.json
-          git add libraries.json
+          bash scripts/sync-readme.sh
+          git add libraries.json README.md
           git commit -m "chore: build ImageMagick ${NEW}"
           git tag "v${NEW}"
           git push origin "v${NEW}"
@@ -95,7 +96,8 @@ jobs:
           git checkout -b "${BRANCH}"
           jq --arg v "${NEW}" '(.[] | select(.key == "imagemagick") | .version) = $v' libraries.json \
             > libraries.json.tmp && mv libraries.json.tmp libraries.json
-          git add libraries.json
+          bash scripts/sync-readme.sh
+          git add libraries.json README.md
           git commit -m "chore: bump ImageMagick to ${NEW}"
           git push origin "${BRANCH}"
           gh pr create \
