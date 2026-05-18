@@ -20,7 +20,7 @@ JPEG, PNG, TIFF, WebP, AVIF, HEIC (read), PDF
 <!-- BUNDLED_LIBRARIES_START -->
 | Library | Version |
 |---|---|
-| ImageMagick | 7.1.2-21 |
+| ImageMagick | 7.1.2-23 |
 | libjpeg-turbo | 3.1.4.1 |
 | libpng | 1.6.58 |
 | libtiff | 4.7.1 |
