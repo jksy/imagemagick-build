@@ -188,6 +188,17 @@ cmake -S libheif -B libheif/build \
   -DENABLE_TESTING=OFF
 cmake --build libheif/build -j"${NPROC}"
 cmake --install libheif/build
+
+# TODO(libheif-1.22.1): remove this patch once libheif >= 1.22.1 is released.
+# libheif 1.22.0 ships a header where `heif_bad_pixel` is referenced without
+# the `struct` keyword and without a typedef, which breaks C consumers such as
+# ImageMagick's coders/heic.c. Upstream added the typedef post-1.22.0:
+# https://github.com/strukturag/libheif/commits/master/libheif/api/libheif/heif_properties.h
+if [ "${HEIF_VERSION}" = "1.22.0" ]; then
+  echo "  Applying libheif 1.22.0 header workaround (heif_bad_pixel typedef)"
+  sed -i 's|^struct heif_bad_pixel { uint32_t row; uint32_t column; };|typedef struct heif_bad_pixel { uint32_t row; uint32_t column; } heif_bad_pixel;|' \
+    "${PREFIX}/include/libheif/heif_properties.h"
+fi
 echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
