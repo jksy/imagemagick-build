@@ -55,6 +55,13 @@ jobs:
           git checkout -f -B "${HEAD_REF}" "origin/${HEAD_REF}"
           cp "${NEW_README_TMP}" README.md
 
+          # The PR branch may already contain the regenerated README (e.g. the
+          # bumper bot updated it). In that case there is nothing to commit.
+          if git diff --quiet README.md; then
+            echo "PR branch README.md is already up to date."
+            exit 0
+          fi
+
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
