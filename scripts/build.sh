@@ -67,6 +67,7 @@ clone_or_update https://github.com/libjpeg-turbo/libjpeg-turbo.git \
   libjpeg-turbo "${JPEG_VERSION}"
 cmake -S libjpeg-turbo -B libjpeg-turbo/build \
   -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+  -DCMAKE_PREFIX_PATH="${PREFIX}" \
   -DCMAKE_INSTALL_LIBDIR=lib \
   -DENABLE_SHARED=1 \
   -DENABLE_STATIC=0
@@ -91,21 +92,7 @@ cd "${BUILD_DIR}"
 echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
-# 3. libtiff
-# ---------------------------------------------------------------------------
-echo "::group::Building libtiff ${TIFF_VERSION}"
-clone_or_update https://gitlab.com/libtiff/libtiff.git \
-  libtiff "v${TIFF_VERSION}"
-cmake -S libtiff -B libtiff/build \
-  -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
-  -DCMAKE_INSTALL_LIBDIR=lib \
-  -DBUILD_SHARED_LIBS=ON
-cmake --build libtiff/build -j"${NPROC}"
-cmake --install libtiff/build
-echo "::endgroup::"
-
-# ---------------------------------------------------------------------------
-# 4. lcms2
+# 3. lcms2
 # ---------------------------------------------------------------------------
 echo "::group::Building lcms2 ${LCMS_VERSION}"
 clone_or_update https://github.com/mm2/Little-CMS.git \
@@ -121,13 +108,14 @@ cd "${BUILD_DIR}"
 echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
-# 5. libaom
+# 4. libaom
 # ---------------------------------------------------------------------------
 echo "::group::Building libaom ${AOM_VERSION}"
 clone_or_update https://aomedia.googlesource.com/aom \
   libaom "v${AOM_VERSION}"
 cmake -S libaom -B libaom/build \
   -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+  -DCMAKE_PREFIX_PATH="${PREFIX}" \
   -DCMAKE_INSTALL_LIBDIR=lib \
   -DBUILD_SHARED_LIBS=1 \
   -DENABLE_TESTS=0
@@ -136,7 +124,7 @@ cmake --install libaom/build
 echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
-# 6. libwebp
+# 5. libwebp (built before libtiff so libtiff can pick it up)
 # ---------------------------------------------------------------------------
 echo "::group::Building libwebp ${WEBP_VERSION}"
 clone_or_update https://github.com/webmproject/libwebp.git \
@@ -152,6 +140,21 @@ cd "${BUILD_DIR}"
 echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
+# 6. libtiff
+# ---------------------------------------------------------------------------
+echo "::group::Building libtiff ${TIFF_VERSION}"
+clone_or_update https://gitlab.com/libtiff/libtiff.git \
+  libtiff "v${TIFF_VERSION}"
+cmake -S libtiff -B libtiff/build \
+  -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+  -DCMAKE_PREFIX_PATH="${PREFIX}" \
+  -DCMAKE_INSTALL_LIBDIR=lib \
+  -DBUILD_SHARED_LIBS=ON
+cmake --build libtiff/build -j"${NPROC}"
+cmake --install libtiff/build
+echo "::endgroup::"
+
+# ---------------------------------------------------------------------------
 # 7. libde265
 # ---------------------------------------------------------------------------
 echo ""
@@ -160,6 +163,7 @@ clone_or_update https://github.com/strukturag/libde265.git \
   libde265 "v${DE265_VERSION}"
 cmake -S libde265 -B libde265/build \
   -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+  -DCMAKE_PREFIX_PATH="${PREFIX}" \
   -DCMAKE_INSTALL_LIBDIR=lib \
   -DENABLE_SDL=OFF
 cmake --build libde265/build -j"${NPROC}"
@@ -173,12 +177,14 @@ clone_or_update https://github.com/strukturag/libheif.git \
   libheif "v${HEIF_VERSION}"
 cmake -S libheif -B libheif/build \
   -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+  -DCMAKE_PREFIX_PATH="${PREFIX}" \
   -DCMAKE_INSTALL_LIBDIR=lib \
   -DWITH_AOM_DECODER=ON \
   -DWITH_AOM_ENCODER=ON \
   -DWITH_LIBDE265=ON \
   -DWITH_X265=OFF \
   -DWITH_DAV1D=OFF \
+  -DWITH_EXAMPLES=OFF \
   -DENABLE_TESTING=OFF
 cmake --build libheif/build -j"${NPROC}"
 cmake --install libheif/build
