@@ -49,7 +49,10 @@ jobs:
           cp README.md "${NEW_README_TMP}"
 
           git fetch origin "${HEAD_REF}"
-          git checkout -B "${HEAD_REF}" "origin/${HEAD_REF}"
+          # -f discards the README.md change made by sync-readme.sh in the
+          # working tree (already saved to NEW_README_TMP above) so the
+          # checkout to the PR head ref does not abort.
+          git checkout -f -B "${HEAD_REF}" "origin/${HEAD_REF}"
           cp "${NEW_README_TMP}" README.md
 
           git config user.name  "github-actions[bot]"
