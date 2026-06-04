@@ -27,7 +27,7 @@ JPEG, PNG, TIFF, WebP, AVIF, HEIC (read), PDF
 | lcms2 | 2.19.1 |
 | libwebp | 1.6.0 |
 | libaom | 3.14.1 |
-| libde265 | 1.1.0 |
+| libde265 | 1.1.1 |
 | libheif | 1.23.0 |
 <!-- BUNDLED_LIBRARIES_END -->
 

@@ -58,7 +58,7 @@
   {
     "key": "libde265",
     "name": "libde265",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "purl_base": "pkg:github/strukturag/libde265",
     "bundled": true,
     "repo": "https://github.com/strukturag/libde265.git"
