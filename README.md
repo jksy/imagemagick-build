@@ -13,7 +13,7 @@ This repository builds [ImageMagick](https://imagemagick.org/) from source with 
 
 ## Supported Formats / 対応フォーマット
 
-JPEG, PNG, TIFF, WebP, AVIF, HEIC (read), PDF, RAW (read: DNG, CR2/CR3, NEF, ARW, RAF, ORF, RW2, PEF, SRW, ほか — via LibRaw)
+JPEG, PNG, TIFF, WebP, AVIF, HEIC (read), PDF
 
 ## Bundled Libraries / 同梱ライブラリ
 
