@@ -20,15 +20,15 @@ JPEG, PNG, TIFF, WebP, AVIF, HEIC (read), PDF, RAW (read: DNG, CR2/CR3, NEF, ARW
 <!-- BUNDLED_LIBRARIES_START -->
 | Library | Version |
 |---|---|
-| ImageMagick | 7.1.2-23 |
+| ImageMagick | 7.1.2-24 |
 | libjpeg-turbo | 3.1.4.1 |
 | libpng | 1.6.58 |
 | libtiff | 4.7.1 |
 | lcms2 | 2.19.1 |
 | libwebp | 1.6.0 |
 | libaom | 3.14.1 |
-| libde265 | 1.0.19 |
-| libheif | 1.22.1 |
+| libde265 | 1.1.1 |
+| libheif | 1.23.0 |
 | LibRaw | 0.21.5 |
 <!-- BUNDLED_LIBRARIES_END -->
 
