@@ -74,7 +74,7 @@
   {
     "key": "libraw",
     "name": "LibRaw",
-    "version": "0.21.5",
+    "version": "0.22.1",
     "purl_base": "pkg:github/LibRaw/LibRaw",
     "bundled": true,
     "repo": "https://github.com/LibRaw/LibRaw.git"
