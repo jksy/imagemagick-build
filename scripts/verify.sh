@@ -44,6 +44,19 @@ if [ "${MISSING:-0}" = "1" ]; then
   exit 1
 fi
 
+# RAW (LibRaw) delegate — the DNG/CR2/NEF/... coders are always registered,
+# so presence in "-list format" does not prove LibRaw is linked. The "raw"
+# delegate in "-version" is only listed when ImageMagick was built with LibRaw.
+echo ""
+echo "::group::RAW (LibRaw) delegate"
+if "${MAGICK}" -version | grep -iE '^Delegates' | grep -qw raw; then
+  echo "  [OK] raw delegate present"
+else
+  echo "  [MISSING] raw delegate — RAW decoding (DNG/CR2/NEF/...) unavailable" >&2
+  exit 1
+fi
+echo "::endgroup::"
+
 # pkg-config
 echo ""
 echo "::group::pkg-config"

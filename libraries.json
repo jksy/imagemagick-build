@@ -72,6 +72,14 @@
     "repo": "https://github.com/strukturag/libheif.git"
   },
   {
+    "key": "libraw",
+    "name": "LibRaw",
+    "version": "0.21.5",
+    "purl_base": "pkg:github/LibRaw/LibRaw",
+    "bundled": true,
+    "repo": "https://github.com/LibRaw/LibRaw.git"
+  },
+  {
     "name": "ghostscript",
     "bundled": false,
     "scope": "optional",
