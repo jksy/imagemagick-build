@@ -91,6 +91,17 @@
       "datasourceTemplate": "github-releases",
       "versioningTemplate": "loose",
       "extractVersionTemplate": "^v?(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^libraries\\.json$/"
+      ],
+      "matchStrings": ["\"key\":\\s*\"libraw\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "LibRaw/LibRaw",
+      "datasourceTemplate": "github-tags",
+      "versioningTemplate": "loose",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
     }
   ],
   "packageRules": [
@@ -114,6 +125,11 @@
       "description": "libpng uses git-tags with alpha/beta/rc pre-releases — only track stable releases",
       "matchDepNames": ["https://github.com/glennrp/libpng"],
       "allowedVersions": "!/alpha|beta|rc/i"
+    },
+    {
+      "description": "LibRaw tags beta releases with a trailing letter (e.g. 0.21.5b) — only track plain X.Y.Z stable tags",
+      "matchDepNames": ["LibRaw/LibRaw"],
+      "allowedVersions": "/^\\d+\\.\\d+\\.\\d+$/"
     }
   ]
 }

@@ -19,6 +19,7 @@ WEBP_VERSION=$(jq -r '.[] | select(.key == "libwebp") | .version' "${LIBRARIES_F
 AOM_VERSION=$(jq -r '.[] | select(.key == "libaom") | .version' "${LIBRARIES_FILE}")
 DE265_VERSION=$(jq -r '.[] | select(.key == "libde265") | .version' "${LIBRARIES_FILE}")
 HEIF_VERSION=$(jq -r '.[] | select(.key == "libheif") | .version' "${LIBRARIES_FILE}")
+RAW_VERSION=$(jq -r '.[] | select(.key == "libraw") | .version' "${LIBRARIES_FILE}")
 
 echo "=== Build versions ==="
 echo "  ImageMagick : ${IM_VERSION}"
@@ -30,6 +31,7 @@ echo "  libwebp     : ${WEBP_VERSION}"
 echo "  libaom      : ${AOM_VERSION}"
 echo "  libde265    : ${DE265_VERSION}"
 echo "  libheif     : ${HEIF_VERSION}"
+echo "  LibRaw      : ${RAW_VERSION}"
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -202,7 +204,26 @@ fi
 echo "::endgroup::"
 
 # ---------------------------------------------------------------------------
-# 9. ImageMagick
+# 9. LibRaw (RAW camera image decoding: DNG, CR2/CR3, NEF, ARW, RAF, ...)
+#    Built after libjpeg-turbo and lcms2 so it can link against them.
+# ---------------------------------------------------------------------------
+echo "::group::Building LibRaw ${RAW_VERSION}"
+clone_or_update https://github.com/LibRaw/LibRaw.git \
+  libraw "${RAW_VERSION}"
+cd libraw
+if [ ! -f configure ]; then
+  autoreconf --install
+fi
+./configure --prefix="${PREFIX}" \
+  --enable-shared \
+  --disable-static
+make -j"${NPROC}"
+make install
+cd "${BUILD_DIR}"
+echo "::endgroup::"
+
+# ---------------------------------------------------------------------------
+# 10. ImageMagick
 # ---------------------------------------------------------------------------
 echo "::group::Building ImageMagick ${IM_VERSION}"
 clone_or_update https://github.com/ImageMagick/ImageMagick.git \
@@ -216,6 +237,7 @@ cd imagemagick
   --with-png=yes \
   --with-tiff=yes \
   --with-lcms=yes \
+  --with-raw=yes \
   --with-gslib=yes \
   --enable-shared \
   --disable-static \
@@ -272,6 +294,7 @@ collect_license "lcms2"         "${BUILD_DIR}/lcms2"
 collect_license "libaom"        "${BUILD_DIR}/libaom"
 collect_license "libwebp"       "${BUILD_DIR}/libwebp"
 collect_license "libheif"       "${BUILD_DIR}/libheif"
+collect_license "LibRaw"        "${BUILD_DIR}/libraw"
 collect_license "ImageMagick"   "${BUILD_DIR}/imagemagick"
 echo "::endgroup::"
 
