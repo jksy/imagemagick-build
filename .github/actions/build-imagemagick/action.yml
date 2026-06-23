@@ -110,7 +110,7 @@ runs:
     - name: Restore library cache
       id: cache
       if: inputs.no_cache != 'true'
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6
       with:
         path: /opt/imagemagick
         key: v3-imagemagick-libs-${{ runner.os }}-${{ runner.arch }}-${{ inputs.cache_suffix }}-${{ steps.version-hash.outputs.hash }}
