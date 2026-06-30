@@ -10,7 +10,7 @@
   {
     "key": "libjpeg_turbo",
     "name": "libjpeg-turbo",
-    "version": "3.1.4.1",
+    "version": "3.2.0",
     "purl_base": "pkg:github/libjpeg-turbo/libjpeg-turbo",
     "bundled": true,
     "repo": "https://github.com/libjpeg-turbo/libjpeg-turbo.git"
