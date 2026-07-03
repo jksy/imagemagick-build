@@ -72,7 +72,8 @@ cmake -S libjpeg-turbo -B libjpeg-turbo/build \
   -DCMAKE_PREFIX_PATH="${PREFIX}" \
   -DCMAKE_INSTALL_LIBDIR=lib \
   -DENABLE_SHARED=1 \
-  -DENABLE_STATIC=0
+  -DENABLE_STATIC=0 \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 cmake --build libjpeg-turbo/build -j"${NPROC}"
 cmake --install libjpeg-turbo/build
 echo "::endgroup::"
