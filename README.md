@@ -25,7 +25,7 @@ JPEG, PNG, TIFF, WebP, AVIF, HEIC (read), PDF, RAW (read: DNG, CR2/CR3, NEF, ARW
 | Library | Version |
 |---|---|
 | ImageMagick | 7.1.2-26 |
-| libjpeg-turbo | 3.1.4.1 |
+| libjpeg-turbo | 3.2.0 |
 | libpng | 1.6.58 |
 | libtiff | 4.7.1 |
 | lcms2 | 2.19.1 |
