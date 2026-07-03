@@ -26,7 +26,7 @@
   {
     "key": "libtiff",
     "name": "libtiff",
-    "version": "4.7.1",
+    "version": "4.7.2",
     "purl_base": "pkg:gitlab/libtiff/libtiff",
     "bundled": true,
     "repo": "https://gitlab.com/libtiff/libtiff.git"
