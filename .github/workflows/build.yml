@@ -28,13 +28,24 @@ permissions:
 
 jobs:
   build:
-    name: Build ImageMagick (${{ matrix.os_tag }}-${{ matrix.arch }})
-    runs-on: ${{ matrix.runner }}
-    container: ${{ matrix.container || '' }}
+    name: Build ImageMagick (${{ matrix.target.os_tag }}-${{ matrix.target.arch }}, ${{ matrix.variant.name }})
+    runs-on: ${{ matrix.target.runner }}
+    container: ${{ matrix.target.container || '' }}
     strategy:
       fail-fast: false
       matrix:
-        include:
+        # Every target is built in two variants: "default" (OpenMP enabled)
+        # and "no-openmp" (ImageMagick configured with --disable-openmp) for
+        # hosts that run many ImageMagick processes concurrently. The variant
+        # suffix becomes part of the release asset name.
+        variant:
+          - name: default
+            suffix: ''
+            disable_openmp: 'false'
+          - name: no-openmp
+            suffix: '-no-openmp'
+            disable_openmp: 'true'
+        target:
           - runner: ubuntu-22.04
             os_tag: ubuntu22.04
             arch: x86_64
@@ -58,7 +69,7 @@ jobs:
 
     steps:
       - name: Install tar and git (AL2023 minimal container)
-        if: matrix.os_tag == 'amzn2023'
+        if: matrix.target.os_tag == 'amzn2023'
         run: dnf install -y tar git
 
       - name: Checkout
@@ -69,9 +80,10 @@ jobs:
         uses: ./.github/actions/build-imagemagick
         with:
           version_file: ${{ github.event.inputs.version_file || 'libraries.json' }}
-          cache_suffix: ${{ matrix.os_tag }}-${{ matrix.arch }}
+          cache_suffix: ${{ matrix.target.os_tag }}-${{ matrix.target.arch }}
           skip_tests: ${{ github.event.inputs.skip_tests || 'false' }}
           no_cache: ${{ github.event.inputs.no_cache || 'false' }}
+          disable_openmp: ${{ matrix.variant.disable_openmp }}
 
       - name: Package build
         run: |
@@ -80,8 +92,9 @@ jobs:
           SUDO_CMD="$(command -v sudo 2>/dev/null || true)"
           $SUDO_CMD env \
                LIBRARIES_FILE="${{ steps.build.outputs.version_file }}" \
-               OS_TAG=${{ matrix.os_tag }} \
-               ARCH=${{ matrix.arch }} \
+               OS_TAG=${{ matrix.target.os_tag }} \
+               ARCH=${{ matrix.target.arch }} \
+               VARIANT=${{ matrix.variant.name }} \
                PREFIX=/opt/imagemagick \
                ARCHIVE_DIR=/tmp/artifacts \
                bash scripts/package.sh
@@ -92,15 +105,15 @@ jobs:
           for tarball in /tmp/artifacts/*.tar.gz; do
             sbom="${tarball%.tar.gz}.sbom.json"
             LIBRARIES_FILE="${{ steps.build.outputs.version_file }}" \
-              OS_TAG=${{ matrix.os_tag }} \
-              ARCH=${{ matrix.arch }} \
+              OS_TAG=${{ matrix.target.os_tag }} \
+              ARCH=${{ matrix.target.arch }} \
               bash scripts/generate-sbom.sh "$sbom"
           done
 
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: imagemagick-${{ steps.build.outputs.imagemagick }}-${{ matrix.os_tag }}-${{ matrix.arch }}
+          name: imagemagick-${{ steps.build.outputs.imagemagick }}-${{ matrix.target.os_tag }}-${{ matrix.target.arch }}${{ matrix.variant.suffix }}
           path: /tmp/artifacts/
           retention-days: 7
 
@@ -176,6 +189,11 @@ jobs:
 
           JPEG · PNG · TIFF · WebP · AVIF · PDF
 
+          ### Variants
+
+          - \`imagemagick-<ver>-<os>-<arch>.tar.gz\` — default build (OpenMP enabled)
+          - \`imagemagick-<ver>-<os>-<arch>-no-openmp.tar.gz\` — ImageMagick built with \`--disable-openmp\`, for hosts running many ImageMagick processes concurrently (e.g. web/worker fleets)
+
           ### Install
 
           \`\`\`bash
@@ -186,6 +204,12 @@ jobs:
 
           \`\`\`bash
           curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | bash
+          \`\`\`
+
+          no-openmp variant をインストールする場合 / To install the no-openmp variant:
+
+          \`\`\`bash
+          curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | IMAGEMAGICK_VARIANT=no-openmp bash
           \`\`\`
           BODYEOF
 

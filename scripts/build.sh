@@ -32,6 +32,7 @@ echo "  libaom      : ${AOM_VERSION}"
 echo "  libde265    : ${DE265_VERSION}"
 echo "  libheif     : ${HEIF_VERSION}"
 echo "  LibRaw      : ${RAW_VERSION}"
+echo "  OpenMP      : $([ "${DISABLE_OPENMP:-0}" = "1" ] && echo "disabled (no-openmp variant)" || echo "enabled")"
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -39,6 +40,14 @@ echo "  LibRaw      : ${RAW_VERSION}"
 PREFIX="${PREFIX:-/opt/imagemagick}"
 BUILD_DIR="${BUILD_DIR:-/tmp/imagemagick-build}"
 NPROC=$(nproc 2>/dev/null || echo 4)
+
+# DISABLE_OPENMP=1 builds ImageMagick itself with --disable-openmp (the
+# "no-openmp" variant). Delegate libraries are built identically in both
+# variants: only ImageMagick's own thread pool is affected. This variant
+# exists for hosts that run many ImageMagick processes concurrently (e.g.
+# web/worker fleets), where OpenMP threads oversubscribe the CPU and hurt
+# latency.
+DISABLE_OPENMP="${DISABLE_OPENMP:-0}"
 
 export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}"
 export LD_LIBRARY_PATH="${PREFIX}/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
@@ -230,6 +239,10 @@ echo "::group::Building ImageMagick ${IM_VERSION}"
 clone_or_update https://github.com/ImageMagick/ImageMagick.git \
   imagemagick "${IM_VERSION}"
 cd imagemagick
+IM_EXTRA_FLAGS=()
+if [ "${DISABLE_OPENMP}" = "1" ]; then
+  IM_EXTRA_FLAGS+=(--disable-openmp)
+fi
 ./configure \
   --prefix="${PREFIX}" \
   --with-heic=yes \
@@ -244,6 +257,7 @@ cd imagemagick
   --disable-static \
   --without-perl \
   --without-python \
+  "${IM_EXTRA_FLAGS[@]}" \
   PKG_CONFIG_PATH="${PKG_CONFIG_PATH}"
 make -j"${NPROC}"
 make install
