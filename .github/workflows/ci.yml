@@ -30,7 +30,7 @@ jobs:
         run: bash scripts/sync-readme.sh --check
 
   build-and-test:
-    name: Build and Test ImageMagick (${{ matrix.os_tag }}-${{ matrix.arch }})
+    name: Build and Test ImageMagick (${{ matrix.os_tag }}-${{ matrix.arch }}${{ matrix.variant && format(', {0}', matrix.variant) || '' }})
     runs-on: ${{ matrix.runner }}
     container: ${{ matrix.container || '' }}
     strategy:
@@ -57,6 +57,13 @@ jobs:
             container: amazonlinux:2023
             os_tag: amzn2023
             arch: aarch64
+          # The no-openmp variant is exercised on a single platform to keep
+          # PR CI cost reasonable; release builds (build.yml) cover every
+          # platform in both variants.
+          - runner: ubuntu-24.04
+            os_tag: ubuntu24.04
+            arch: x86_64
+            variant: no-openmp
 
     steps:
       - name: Install tar and git (AL2023 minimal container)
@@ -70,3 +77,4 @@ jobs:
         uses: ./.github/actions/build-imagemagick
         with:
           cache_suffix: ${{ matrix.os_tag }}-${{ matrix.arch }}
+          disable_openmp: ${{ matrix.variant == 'no-openmp' && 'true' || 'false' }}

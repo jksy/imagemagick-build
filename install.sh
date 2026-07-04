@@ -39,7 +39,19 @@ case "$ARCH" in
   *) echo "Error: Unsupported architecture: $ARCH" >&2; exit 1 ;;
 esac
 
-echo "Detected: ${PRETTY_NAME:-${ID} ${VERSION_ID}} / ${ARCH}"
+# Variant selection. IMAGEMAGICK_VARIANT=no-openmp installs the build where
+# ImageMagick was configured with --disable-openmp (for hosts running many
+# ImageMagick processes concurrently). Empty or "default" selects the
+# standard OpenMP-enabled build. Note: both variants unpack to the same
+# imagemagick/<version>/ directory, so install only one per INSTALL_BASE.
+VARIANT="${IMAGEMAGICK_VARIANT:-}"
+case "${VARIANT}" in
+  ""|default) VARIANT_SUFFIX="" ;;
+  no-openmp)  VARIANT_SUFFIX="-no-openmp" ;;
+  *) echo "Error: Unsupported IMAGEMAGICK_VARIANT: ${VARIANT} (supported: no-openmp)" >&2; exit 1 ;;
+esac
+
+echo "Detected: ${PRETTY_NAME:-${ID} ${VERSION_ID}} / ${ARCH}${VARIANT_SUFFIX:+ / variant: ${VARIANT}}"
 
 # Ensure required tools and runtime dependencies are available
 _missing=()
@@ -81,24 +93,29 @@ else
 fi
 unset _curl_auth
 echo "::endgroup::"
+# "|| true" keeps set -e from killing the script when grep finds no match,
+# so the explicit empty-check below can print a useful error instead.
 ASSET_URL=$(echo "$RELEASE_JSON" \
   | grep '"browser_download_url"' \
   | cut -d'"' -f4 \
-  | grep -E "${OS_TAG}-${ARCH}\.tar\.gz$")
+  | grep -E "${OS_TAG}-${ARCH}${VARIANT_SUFFIX}\.tar\.gz$" || true)
 
 if [[ "$(echo "$ASSET_URL" | wc -l)" -gt 1 ]]; then
-  echo "Error: Multiple matching tarball assets found for ${OS_TAG} ${ARCH}" >&2
+  echo "Error: Multiple matching tarball assets found for ${OS_TAG} ${ARCH}${VARIANT_SUFFIX}" >&2
   echo "$ASSET_URL" >&2
   exit 1
 fi
 
 if [[ -z "$ASSET_URL" ]]; then
-  echo "Error: No matching asset found for ${OS_TAG} ${ARCH}" >&2
+  echo "Error: No matching asset found for ${OS_TAG} ${ARCH}${VARIANT_SUFFIX}" >&2
+  if [[ -n "${VARIANT_SUFFIX}" ]]; then
+    echo "Note: the ${VARIANT} variant is only published for releases built after it was introduced." >&2
+  fi
   exit 1
 fi
 
 TARBALL=$(basename "$ASSET_URL")
-IM_VERSION=$(echo "$TARBALL" | sed "s/^imagemagick-//" | sed "s/-${OS_TAG}-${ARCH}\.tar\.gz$//")
+IM_VERSION=$(echo "$TARBALL" | sed "s/^imagemagick-//" | sed "s/-${OS_TAG}-${ARCH}${VARIANT_SUFFIX}\.tar\.gz$//")
 
 echo "Installing ImageMagick ${IM_VERSION}..."
 echo "  Source:      ${ASSET_URL}"

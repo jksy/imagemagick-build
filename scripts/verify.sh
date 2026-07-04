@@ -57,6 +57,29 @@ else
 fi
 echo "::endgroup::"
 
+# OpenMP feature — the Features line of "-version" lists OpenMP only when
+# ImageMagick was compiled with it. DISABLE_OPENMP=1 (the no-openmp variant)
+# must not list it; the default variant must. Asserting both directions
+# guards against a variant mix-up in packaging.
+echo ""
+echo "::group::OpenMP feature"
+FEATURES_LINE=$("${MAGICK}" -version | grep -iE '^Features' || true)
+echo "  ${FEATURES_LINE:-Features line not found}"
+if [ "${DISABLE_OPENMP:-0}" = "1" ]; then
+  if echo "${FEATURES_LINE}" | grep -qw OpenMP; then
+    echo "  [ERROR] OpenMP is enabled but this is the no-openmp variant" >&2
+    exit 1
+  fi
+  echo "  [OK] OpenMP disabled (no-openmp variant)"
+else
+  if ! echo "${FEATURES_LINE}" | grep -qw OpenMP; then
+    echo "  [ERROR] OpenMP feature missing from default variant build" >&2
+    exit 1
+  fi
+  echo "  [OK] OpenMP enabled"
+fi
+echo "::endgroup::"
+
 # pkg-config
 echo ""
 echo "::group::pkg-config"

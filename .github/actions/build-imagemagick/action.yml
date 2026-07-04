@@ -18,6 +18,10 @@ inputs:
     description: 'Set to "true" to skip cache restore and force full rebuild'
     required: false
     default: 'false'
+  disable_openmp:
+    description: 'Set to "true" to build ImageMagick with --disable-openmp (the no-openmp variant)'
+    required: false
+    default: 'false'
 
 outputs:
   imagemagick:
@@ -113,7 +117,10 @@ runs:
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
       with:
         path: /opt/imagemagick
-        key: v3-imagemagick-libs-${{ runner.os }}-${{ runner.arch }}-${{ inputs.cache_suffix }}-${{ steps.version-hash.outputs.hash }}
+        # The variant is part of the key (not left to cache_suffix) so that a
+        # caller forgetting to disambiguate can never restore an OpenMP build
+        # into a no-openmp job or vice versa.
+        key: v4-imagemagick-libs-${{ runner.os }}-${{ runner.arch }}-${{ inputs.cache_suffix }}-${{ inputs.disable_openmp == 'true' && 'no-openmp' || 'default' }}-${{ steps.version-hash.outputs.hash }}
 
     - name: Build all libraries and ImageMagick
       if: steps.cache.outputs.cache-hit != 'true'
@@ -121,6 +128,7 @@ runs:
       env:
         DEBIAN_FRONTEND: noninteractive
         SKIP_TESTS: ${{ inputs.skip_tests == 'true' && '1' || '0' }}
+        DISABLE_OPENMP: ${{ inputs.disable_openmp == 'true' && '1' || '0' }}
       run: |
         chmod +x scripts/build.sh
         LIBRARIES_FILE="${{ inputs.version_file }}" \
@@ -131,13 +139,18 @@ runs:
       if: failure()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       with:
-        name: imagemagick-test-suite-log-${{ runner.os }}-${{ runner.arch }}
+        # cache_suffix (os_tag-arch) disambiguates jobs that share the same
+        # runner.os/arch, e.g. the amzn2023 container builds and the two
+        # OpenMP variants.
+        name: imagemagick-test-suite-log-${{ inputs.cache_suffix }}-${{ inputs.disable_openmp == 'true' && 'no-openmp' || 'default' }}
         path: /tmp/imagemagick-build/imagemagick/tests/test-suite.log
         if-no-files-found: ignore
         retention-days: 7
 
     - name: Verify build
       shell: bash
+      env:
+        DISABLE_OPENMP: ${{ inputs.disable_openmp == 'true' && '1' || '0' }}
       run: |
         chmod +x scripts/verify.sh
         PREFIX=/opt/imagemagick bash scripts/verify.sh

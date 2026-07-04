@@ -11,7 +11,16 @@ IM_VERSION=$(jq -r '.[] | select(.key == "imagemagick") | .version' "${LIBRARIES
 OS_TAG="${OS_TAG:-ubuntu22.04}"
 ARCH="${ARCH:-$(uname -m)}"
 
-ARCHIVE_NAME="imagemagick-${IM_VERSION}-${OS_TAG}-${ARCH}.tar.gz"
+# VARIANT names an alternate build flavor (e.g. "no-openmp") and becomes an
+# archive name suffix so variants can coexist as release assets. Empty or
+# "default" means the standard build with no suffix.
+VARIANT="${VARIANT:-}"
+case "${VARIANT}" in
+  ""|default) VARIANT_SUFFIX="" ;;
+  *) VARIANT_SUFFIX="-${VARIANT}" ;;
+esac
+
+ARCHIVE_NAME="imagemagick-${IM_VERSION}-${OS_TAG}-${ARCH}${VARIANT_SUFFIX}.tar.gz"
 ARCHIVE_PATH="${ARCHIVE_DIR:-/tmp}/${ARCHIVE_NAME}"
 
 echo "=== Packaging ImageMagick ${IM_VERSION} ==="

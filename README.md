@@ -59,6 +59,23 @@ curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install
 curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | IMAGEMAGICK_INSTALL_BASE=$HOME/.local bash
 ```
 
+## Variants / ビルドバリアント
+
+Each release ships every platform in two variants:
+
+| Variant | Asset name | Description |
+|---|---|---|
+| default | `imagemagick-<ver>-<os>-<arch>.tar.gz` | Standard build, OpenMP enabled |
+| no-openmp | `imagemagick-<ver>-<os>-<arch>-no-openmp.tar.gz` | ImageMagick configured with `--disable-openmp`. For hosts running many ImageMagick processes concurrently (web/worker fleets), where OpenMP threads oversubscribe the CPU and hurt latency. Delegate libraries are identical to the default variant. |
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | IMAGEMAGICK_VARIANT=no-openmp bash
+```
+
+> Both variants unpack to the same `imagemagick/<version>/` directory — install only one variant per `IMAGEMAGICK_INSTALL_BASE`.
+>
+> 各リリースには全プラットフォーム × 2 バリアント（default / no-openmp）のアーカイブが含まれます。no-openmp は ImageMagick を `--disable-openmp` でビルドしたもので、多数の ImageMagick プロセスを並行実行するホスト（Web/ワーカー系）向けです。両バリアントは同じ `imagemagick/<version>/` に展開されるため、1 つのインストール先にはどちらか一方のみをインストールしてください。
+
 ## Usage: Download Pre-built Binary
 
 > **For GitHub Actions users:** [jksy/setup-imagemagick](https://github.com/jksy/setup-imagemagick) provides a ready-to-use action that downloads and sets up ImageMagick from these releases automatically.
