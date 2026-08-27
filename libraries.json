@@ -50,7 +50,7 @@
   {
     "key": "libaom",
     "name": "libaom",
-    "version": "3.14.1",
+    "version": "3.15.0",
     "purl_base": "pkg:github/AOMediaCodec/libaom",
     "bundled": true,
     "repo": "https://aomedia.googlesource.com/aom"
