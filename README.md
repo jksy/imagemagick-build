@@ -5,11 +5,11 @@
 
 ## Overview
 
-This repository builds [ImageMagick](https://imagemagick.org/) from source with all required libraries statically bundled, and publishes pre-built tarballs for Ubuntu 22.04 and 24.04 (x86\_64 and aarch64) as GitHub Releases. New ImageMagick versions are detected automatically every week, and bundled library updates are also rebuilt automatically via Renovate.
+This repository builds [ImageMagick](https://imagemagick.org/) from source with all required libraries statically bundled, and publishes pre-built tarballs for Ubuntu 22.04, 24.04 and 26.04 (x86\_64 and aarch64) as GitHub Releases. New ImageMagick versions are detected automatically every week, and bundled library updates are also rebuilt automatically via Renovate.
 
 ---
 
-このリポジトリは [ImageMagick](https://imagemagick.org/) を必要なライブラリごとソースからビルドし、Ubuntu 22.04 / 24.04 (x86\_64 / aarch64) 向けの事前ビルド済みアーカイブを GitHub Releases として公開します。新しい ImageMagick バージョンは毎週自動的に検出され、同梱ライブラリの更新も Renovate により自動的にリビルドされます。
+このリポジトリは [ImageMagick](https://imagemagick.org/) を必要なライブラリごとソースからビルドし、Ubuntu 22.04 / 24.04 / 26.04 (x86\_64 / aarch64) 向けの事前ビルド済みアーカイブを GitHub Releases として公開します。新しい ImageMagick バージョンは毎週自動的に検出され、同梱ライブラリの更新も Renovate により自動的にリビルドされます。
 
 ## Supported Formats / 対応フォーマット
 
@@ -40,7 +40,7 @@ JPEG, PNG, TIFF, WebP, AVIF, HEIC (read), PDF, RAW (read: DNG, CR2/CR3, NEF, ARW
 
 ## Quick Install
 
-Ubuntu 22.04 / 24.04 (x86_64 / aarch64) に1行でインストールできます:
+Ubuntu 22.04 / 24.04 / 26.04 (x86_64 / aarch64) に1行でインストールできます:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | bash
@@ -160,7 +160,7 @@ HEIC 読み込みのスモークテスト（`scripts/verify.sh`）で使用し�
 
 | Workflow | Trigger | Description |
 |---|---|---|
-| [`build.yml`](.github/workflows/build.yml) | Tag push (`v*`), manual | Builds for Ubuntu 22.04 & 24.04 (x86\_64 / aarch64), creates GitHub Release on tag push |
+| [`build.yml`](.github/workflows/build.yml) | Tag push (`v*`), manual | Builds for Ubuntu 22.04, 24.04 & 26.04 and Amazon Linux 2023 (x86\_64 / aarch64), creates GitHub Release on tag push |
 | [`check-new-version.yml`](.github/workflows/check-new-version.yml) | Weekly (Mon 09:00 UTC), manual | Detects latest ImageMagick release, bumps `libraries.json`, pushes a new tag |
 | [`rebuild-on-library-update.yml`](.github/workflows/rebuild-on-library-update.yml) | Push to `main` (when `libraries.json` changes) | Detects library-only updates, creates a dated snapshot tag to trigger a rebuild |
 | [`ci.yml`](.github/workflows/ci.yml) | Pull request to `main` | Lints workflows with actionlint and runs a test build |

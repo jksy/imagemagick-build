@@ -58,6 +58,13 @@ jobs:
           - runner: ubuntu-24.04-arm
             os_tag: ubuntu24.04
             arch: aarch64
+          # Ubuntu 26.04 runner images are still in public preview.
+          - runner: ubuntu-26.04
+            os_tag: ubuntu26.04
+            arch: x86_64
+          - runner: ubuntu-26.04-arm
+            os_tag: ubuntu26.04
+            arch: aarch64
           - runner: ubuntu-24.04
             container: amazonlinux:2023
             os_tag: amzn2023
@@ -168,7 +175,7 @@ jobs:
         run: |
           IM_VERSION="${{ steps.versions.outputs.imagemagick }}"
           cat > /tmp/release_body.md << BODYEOF
-          ## ImageMagick ${IM_VERSION} — Ubuntu 22.04 / 24.04 · Amazon Linux 2023 · x86_64 / aarch64
+          ## ImageMagick ${IM_VERSION} — Ubuntu 22.04 / 24.04 / 26.04 · Amazon Linux 2023 · x86_64 / aarch64
 
           Pre-built ImageMagick binary with SDK for RMagick / CI use.
 

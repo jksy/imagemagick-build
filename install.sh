@@ -6,7 +6,7 @@ INSTALL_BASE="${IMAGEMAGICK_INSTALL_BASE:-/opt}"
 
 # OS check
 if [[ ! -f /etc/os-release ]]; then
-  echo "Error: /etc/os-release not found. Supported OS: Ubuntu 22.04/24.04, Amazon Linux 2023." >&2
+  echo "Error: /etc/os-release not found. Supported OS: Ubuntu 22.04/24.04/26.04, Amazon Linux 2023." >&2
   exit 1
 fi
 # shellcheck source=/dev/null
@@ -16,8 +16,8 @@ OS_TAG=""
 case "${ID:-}" in
   ubuntu)
     case "${VERSION_ID:-}" in
-      22.04|24.04) OS_TAG="ubuntu${VERSION_ID}" ;;
-      *) echo "Error: Unsupported Ubuntu version: ${VERSION_ID} (supported: 22.04, 24.04)" >&2; exit 1 ;;
+      22.04|24.04|26.04) OS_TAG="ubuntu${VERSION_ID}" ;;
+      *) echo "Error: Unsupported Ubuntu version: ${VERSION_ID} (supported: 22.04, 24.04, 26.04)" >&2; exit 1 ;;
     esac
     ;;
   amzn)
@@ -27,7 +27,7 @@ case "${ID:-}" in
     esac
     ;;
   *)
-    echo "Error: Unsupported OS: ${ID:-unknown} (supported: Ubuntu 22.04/24.04, Amazon Linux 2023)" >&2
+    echo "Error: Unsupported OS: ${ID:-unknown} (supported: Ubuntu 22.04/24.04/26.04, Amazon Linux 2023)" >&2
     exit 1
     ;;
 esac

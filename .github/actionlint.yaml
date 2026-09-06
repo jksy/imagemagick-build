@@ -1,0 +1,7 @@
+# actionlint does not know the Ubuntu 26.04 runner labels yet (they are still
+# in public preview), so they are declared here to keep the lint job green.
+# Remove these entries once actionlint ships them as built-in labels.
+self-hosted-runner:
+  labels:
+    - ubuntu-26.04
+    - ubuntu-26.04-arm
