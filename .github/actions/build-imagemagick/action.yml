@@ -54,7 +54,7 @@ runs:
             jq \
             ghostscript \
             zlib1g-dev \
-            libfreetype6-dev \
+            libfreetype-dev \
             ca-certificates
           if [ "$(uname -m)" = "x86_64" ]; then
             $SUDO_CMD apt-get install -y --no-install-recommends nasm

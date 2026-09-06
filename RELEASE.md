@@ -28,9 +28,9 @@ rebuild-on-library-update.yml（main への push を検知）
 
 ↓ build.yml（v* タグで起動）
 
-  build ジョブ: 6プラットフォーム × 2バリアント = 12並列ビルド
-    Ubuntu 22.04 / 24.04 × x86_64 / aarch64
-    Amazon Linux 2023  × x86_64 / aarch64
+  build ジョブ: 8プラットフォーム × 2バリアント = 16並列ビルド
+    Ubuntu 22.04 / 24.04 / 26.04 × x86_64 / aarch64
+    Amazon Linux 2023            × x86_64 / aarch64
     バリアント: default（OpenMP有効） / no-openmp（--disable-openmp）
 
   release ジョブ: GitHub Release を作成（tar.gz + SBOM）

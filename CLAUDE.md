@@ -1,6 +1,6 @@
 # CLAUDE.md — imagemagick-build
 
-ImageMagickを必要なライブラリごとソースからビルドし、Ubuntu 22.04/24.04 および Amazon Linux 2023 向けの事前ビルド済みアーカイブをGitHub Releasesとして公開する自動化リポジトリ。
+ImageMagickを必要なライブラリごとソースからビルドし、Ubuntu 22.04/24.04/26.04 および Amazon Linux 2023 向けの事前ビルド済みアーカイブをGitHub Releasesとして公開する自動化リポジトリ。
 
 ## Key Files
 
