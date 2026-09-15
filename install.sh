@@ -57,11 +57,21 @@ echo "Detected: ${PRETTY_NAME:-${ID} ${VERSION_ID}} / ${ARCH}${VARIANT_SUFFIX:+ 
 _missing=()
 command -v curl       >/dev/null 2>&1 || _missing+=(curl)
 command -v tar        >/dev/null 2>&1 || _missing+=(tar)
+command -v gzip       >/dev/null 2>&1 || _missing+=(gzip)
 command -v pkg-config >/dev/null 2>&1 || _missing+=(pkg-config)
+
+# libgomp.so.1 (OpenMP runtime) is needed by both variants: the default build
+# of ImageMagick itself, and LibRaw in either case. Ubuntu and amazonlinux:2023
+# images usually ship it; amazonlinux:2027 does not.
+_need_libgomp=0
+if ! ldconfig -p 2>/dev/null | grep -q 'libgomp\.so\.1'; then
+  _need_libgomp=1
+fi
 
 echo "::group::Installing dependencies"
 case "${ID:-}" in
   ubuntu)
+    [[ "${_need_libgomp}" = "1" ]] && _missing+=(libgomp1)
     if [[ ${#_missing[@]} -gt 0 ]]; then
       echo "Installing missing dependencies: ${_missing[*]}"
       apt-get install -y -qq "${_missing[@]}"
@@ -71,11 +81,12 @@ case "${ID:-}" in
     # freetype is not bundled and must be installed from the system
     # pkgconf-pkg-config provides pkg-config on Amazon Linux
     _missing+=(freetype pkgconf-pkg-config)
+    [[ "${_need_libgomp}" = "1" ]] && _missing+=(libgomp)
     echo "Installing dependencies: ${_missing[*]}"
     dnf install -y -q --allowerasing "${_missing[@]}"
     ;;
 esac
-unset _missing
+unset _missing _need_libgomp
 echo "::endgroup::"
 
 # Fetch release asset URL (specific version or latest)
