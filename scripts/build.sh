@@ -257,6 +257,8 @@ fi
   --disable-static \
   --without-perl \
   --without-python \
+  --without-x \
+  --without-fontconfig \
   "${IM_EXTRA_FLAGS[@]}" \
   PKG_CONFIG_PATH="${PKG_CONFIG_PATH}"
 make -j"${NPROC}"

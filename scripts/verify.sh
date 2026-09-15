@@ -151,5 +151,28 @@ else
 fi
 echo "::endgroup::"
 
+# Unwanted runtime dependencies — ./configure auto-enables X11 and fontconfig
+# whenever their headers happen to be present on the build host (on Amazon
+# Linux 2027, freetype-devel pulls them in via harfbuzz-devel -> cairo-devel).
+# Neither is bundled and neither exists on minimal runtime containers, so
+# magick would fail to start with "libXext.so.6: cannot open shared object
+# file". build.sh passes --without-x --without-fontconfig; assert it stuck.
+echo ""
+echo "::group::Unwanted runtime dependencies"
+UNWANTED_LIBS='libX11|libXext|libfontconfig'
+UNWANTED_FOUND=0
+for so in "${MAGICK}" "${PREFIX}"/lib/libMagickCore-*.so; do
+  if hits=$(objdump -p "${so}" | grep -w NEEDED | grep -E "${UNWANTED_LIBS}"); then
+    echo "  [ERROR] $(basename "${so}") links against:" >&2
+    echo "${hits}" >&2
+    UNWANTED_FOUND=1
+  fi
+done
+if [ "${UNWANTED_FOUND}" = "1" ]; then
+  exit 1
+fi
+echo "  [OK] no X11 / fontconfig dependency"
+echo "::endgroup::"
+
 echo ""
 echo "=== Verification passed ==="
