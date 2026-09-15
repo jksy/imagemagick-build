@@ -6,7 +6,7 @@ INSTALL_BASE="${IMAGEMAGICK_INSTALL_BASE:-/opt}"
 
 # OS check
 if [[ ! -f /etc/os-release ]]; then
-  echo "Error: /etc/os-release not found. Supported OS: Ubuntu 22.04/24.04/26.04, Amazon Linux 2023." >&2
+  echo "Error: /etc/os-release not found. Supported OS: Ubuntu 22.04/24.04/26.04, Amazon Linux 2023/2027." >&2
   exit 1
 fi
 # shellcheck source=/dev/null
@@ -22,12 +22,12 @@ case "${ID:-}" in
     ;;
   amzn)
     case "${VERSION_ID:-}" in
-      2023) OS_TAG="amzn2023" ;;
-      *) echo "Error: Unsupported Amazon Linux version: ${VERSION_ID} (supported: 2023)" >&2; exit 1 ;;
+      2023|2027) OS_TAG="amzn${VERSION_ID}" ;;
+      *) echo "Error: Unsupported Amazon Linux version: ${VERSION_ID} (supported: 2023, 2027)" >&2; exit 1 ;;
     esac
     ;;
   *)
-    echo "Error: Unsupported OS: ${ID:-unknown} (supported: Ubuntu 22.04/24.04/26.04, Amazon Linux 2023)" >&2
+    echo "Error: Unsupported OS: ${ID:-unknown} (supported: Ubuntu 22.04/24.04/26.04, Amazon Linux 2023/2027)" >&2
     exit 1
     ;;
 esac
@@ -69,7 +69,7 @@ case "${ID:-}" in
     ;;
   amzn)
     # freetype is not bundled and must be installed from the system
-    # pkgconf-pkg-config provides pkg-config on Amazon Linux 2023
+    # pkgconf-pkg-config provides pkg-config on Amazon Linux
     _missing+=(freetype pkgconf-pkg-config)
     echo "Installing dependencies: ${_missing[*]}"
     dnf install -y -q --allowerasing "${_missing[@]}"

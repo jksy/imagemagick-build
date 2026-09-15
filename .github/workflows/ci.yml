@@ -64,6 +64,15 @@ jobs:
             container: amazonlinux:2023
             os_tag: amzn2023
             arch: aarch64
+          # Amazon Linux 2027 is still in public preview.
+          - runner: ubuntu-24.04
+            container: amazonlinux:2027
+            os_tag: amzn2027
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            container: amazonlinux:2027
+            os_tag: amzn2027
+            arch: aarch64
           # The no-openmp variant is exercised on a single platform to keep
           # PR CI cost reasonable; release builds (build.yml) cover every
           # platform in both variants.
@@ -73,8 +82,8 @@ jobs:
             variant: no-openmp
 
     steps:
-      - name: Install tar and git (AL2023 minimal container)
-        if: matrix.os_tag == 'amzn2023'
+      - name: Install tar and git (Amazon Linux minimal container)
+        if: startsWith(matrix.os_tag, 'amzn')
         run: dnf install -y tar git
 
       - name: Checkout
