@@ -140,7 +140,7 @@ runs:
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       with:
         # cache_suffix (os_tag-arch) disambiguates jobs that share the same
-        # runner.os/arch, e.g. the amzn2023 container builds and the two
+        # runner.os/arch, e.g. the Amazon Linux container builds and the two
         # OpenMP variants.
         name: imagemagick-test-suite-log-${{ inputs.cache_suffix }}-${{ inputs.disable_openmp == 'true' && 'no-openmp' || 'default' }}
         path: /tmp/imagemagick-build/imagemagick/tests/test-suite.log

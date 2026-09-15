@@ -39,6 +39,15 @@ jobs:
             container: amazonlinux:2023
             os_tag: amzn2023
             arch: aarch64
+          # Amazon Linux 2027 is still in public preview.
+          - runner: ubuntu-24.04
+            container: amazonlinux:2027
+            os_tag: amzn2027
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            container: amazonlinux:2027
+            os_tag: amzn2027
+            arch: aarch64
           - runner: ubuntu-26.04
             os_tag: ubuntu26.04
             arch: x86_64
@@ -49,8 +58,8 @@ jobs:
     container: ${{ matrix.container || '' }}
 
     steps:
-      - name: Install git (AL2023 minimal container)
-        if: matrix.os_tag == 'amzn2023'
+      - name: Install git (Amazon Linux minimal container)
+        if: startsWith(matrix.os_tag, 'amzn')
         run: dnf install -y git
 
       - name: Checkout

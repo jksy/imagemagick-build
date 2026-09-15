@@ -160,7 +160,7 @@ HEIC 読み込みのスモークテスト（`scripts/verify.sh`）で使用し�
 
 | Workflow | Trigger | Description |
 |---|---|---|
-| [`build.yml`](.github/workflows/build.yml) | Tag push (`v*`), manual | Builds for Ubuntu 22.04, 24.04 & 26.04 and Amazon Linux 2023 (x86\_64 / aarch64), creates GitHub Release on tag push |
+| [`build.yml`](.github/workflows/build.yml) | Tag push (`v*`), manual | Builds for Ubuntu 22.04, 24.04 & 26.04 and Amazon Linux 2023 & 2027 (x86\_64 / aarch64), creates GitHub Release on tag push |
 | [`check-new-version.yml`](.github/workflows/check-new-version.yml) | Weekly (Mon 09:00 UTC), manual | Detects latest ImageMagick release, bumps `libraries.json`, pushes a new tag |
 | [`rebuild-on-library-update.yml`](.github/workflows/rebuild-on-library-update.yml) | Push to `main` (when `libraries.json` changes) | Detects library-only updates, creates a dated snapshot tag to trigger a rebuild |
 | [`ci.yml`](.github/workflows/ci.yml) | Pull request to `main` | Lints workflows with actionlint and runs a test build |
