@@ -30,7 +30,7 @@ JPEG, PNG, TIFF, WebP, AVIF, HEIC (read), PDF, RAW (read: DNG, CR2/CR3, NEF, ARW
 | libtiff | 4.7.2 |
 | lcms2 | 2.19.1 |
 | libwebp | 1.6.0 |
-| libaom | 3.15.0 |
+| libaom | 3.15.1 |
 | libde265 | 1.1.3 |
 | libheif | 1.23.5 |
 | LibRaw | 0.22.2 |
