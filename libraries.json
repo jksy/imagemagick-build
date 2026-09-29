@@ -18,7 +18,7 @@
   {
     "key": "libpng",
     "name": "libpng",
-    "version": "1.6.58",
+    "version": "1.6.59",
     "purl_base": "pkg:github/glennrp/libpng",
     "bundled": true,
     "repo": "https://github.com/glennrp/libpng.git"
