@@ -82,9 +82,9 @@ jobs:
             variant: no-openmp
 
     steps:
-      - name: Install tar and git (Amazon Linux minimal container)
+      - name: Install tar, gzip and git (Amazon Linux minimal container)
         if: startsWith(matrix.os_tag, 'amzn')
-        run: dnf install -y tar git
+        run: dnf install -y tar gzip git
 
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
