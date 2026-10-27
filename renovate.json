@@ -12,7 +12,7 @@
       "matchStrings": ["\"key\":\\s*\"libjpeg_turbo\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "libjpeg-turbo/libjpeg-turbo",
       "datasourceTemplate": "github-releases",
-      "versioningTemplate": "loose"
+      "versioningTemplate": "semver"
     },
     {
       "customType": "regex",
@@ -22,7 +22,7 @@
       "matchStrings": ["\"key\":\\s*\"libpng\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "https://github.com/glennrp/libpng",
       "datasourceTemplate": "git-tags",
-      "versioningTemplate": "loose",
+      "versioningTemplate": "semver",
       "extractVersionTemplate": "^v?(?<version>.+)$"
     },
     {
@@ -34,7 +34,7 @@
       "depNameTemplate": "libtiff/libtiff",
       "datasourceTemplate": "gitlab-releases",
       "registryUrlTemplate": "https://gitlab.com",
-      "versioningTemplate": "loose",
+      "versioningTemplate": "semver",
       "extractVersionTemplate": "^v?(?<version>.+)$"
     },
     {
@@ -56,7 +56,7 @@
       "matchStrings": ["\"key\":\\s*\"libwebp\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "https://github.com/webmproject/libwebp",
       "datasourceTemplate": "git-tags",
-      "versioningTemplate": "loose",
+      "versioningTemplate": "semver",
       "extractVersionTemplate": "^v?(?<version>.+)$"
     },
     {
@@ -67,7 +67,7 @@
       "matchStrings": ["\"key\":\\s*\"libaom\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "https://aomedia.googlesource.com/aom",
       "datasourceTemplate": "git-tags",
-      "versioningTemplate": "loose",
+      "versioningTemplate": "semver",
       "extractVersionTemplate": "^v?(?<version>.+)$"
     },
     {
@@ -78,7 +78,7 @@
       "matchStrings": ["\"key\":\\s*\"libde265\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "strukturag/libde265",
       "datasourceTemplate": "github-releases",
-      "versioningTemplate": "loose",
+      "versioningTemplate": "semver",
       "extractVersionTemplate": "^v?(?<version>.+)$"
     },
     {
@@ -89,7 +89,7 @@
       "matchStrings": ["\"key\":\\s*\"libheif\"[\\s\\S]*?\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "strukturag/libheif",
       "datasourceTemplate": "github-releases",
-      "versioningTemplate": "loose",
+      "versioningTemplate": "semver",
       "extractVersionTemplate": "^v?(?<version>.+)$"
     },
     {
@@ -122,9 +122,9 @@
       "groupName": "bundled libraries"
     },
     {
-      "description": "libpng uses git-tags with alpha/beta/rc pre-releases — only track stable releases",
-      "matchDepNames": ["https://github.com/glennrp/libpng"],
-      "allowedVersions": "!/alpha|beta|rc/i"
+      "description": "Bundled libraries: safety net for the loose-versioned deps (lcms2, LibRaw) whose parser never flags pre-releases — skip alpha/beta/rc/pre tags. semver-versioned deps are already covered by ignoreUnstable",
+      "matchManagers": ["custom.regex"],
+      "allowedVersions": "!/alpha|beta|rc|pre/i"
     },
     {
       "description": "LibRaw tags beta releases with a trailing letter (e.g. 0.21.5b) — only track plain X.Y.Z stable tags",
