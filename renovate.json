@@ -122,9 +122,9 @@
       "groupName": "bundled libraries"
     },
     {
-      "description": "libpng uses git-tags with alpha/beta/rc pre-releases — only track stable releases",
-      "matchDepNames": ["https://github.com/glennrp/libpng"],
-      "allowedVersions": "!/alpha|beta|rc/i"
+      "description": "Bundled libraries: only track stable releases — skip alpha/beta/rc/pre tags (e.g. libpng, libaom v3.15.3-rc1)",
+      "matchManagers": ["custom.regex"],
+      "allowedVersions": "!/alpha|beta|rc|pre/i"
     },
     {
       "description": "LibRaw tags beta releases with a trailing letter (e.g. 0.21.5b) — only track plain X.Y.Z stable tags",
