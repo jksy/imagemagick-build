@@ -12,6 +12,7 @@ ImageMagickを必要なライブラリごとソースからビルドし、Ubuntu
 - `scripts/sync-readme.sh` — `libraries.json` から README.md の Bundled Libraries テーブルを再生成。`--check` で CI 検証。
 - `install.sh` — エンドユーザー向けワンライナーインストールスクリプト。
 - `.github/actions/build-imagemagick/action.yml` — ビルドを担う再利用可能コンポジットアクション。
+- `ci.yml` / `build.yml` の Ubuntu ランナーでは、ビルド前に [jksy/apt-install-unstuck](https://github.com/jksy/apt-install-unstuck) を実行しているため、以降の `apt-get` はミラー切替プロキシ経由になる（Amazon Linux コンテナではスキップ）。apt の挙動が素の状態と違って見える場合はここを確認。
 
 ## リリースタグ命名規則
 
