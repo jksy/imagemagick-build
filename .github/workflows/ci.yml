@@ -89,6 +89,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # GitHub-hosted Ubuntu runners occasionally hit a stalled mirror
+      # (azure.archive.ubuntu.com / ports.ubuntu.com) and apt-get hangs until
+      # the job times out. Route apt-get through a local proxy that fails over
+      # to another mirror mid-download. Not needed in the Amazon Linux
+      # containers, which install packages with dnf.
+      - name: Keep apt-get from hanging on a stalled mirror
+        if: ${{ !matrix.container }}
+        uses: jksy/apt-install-unstuck@c5b4e965695550538c13e85e3634410e3b7d799d # v0.2.0
+
       - name: Build and verify ImageMagick
         uses: ./.github/actions/build-imagemagick
         with:
