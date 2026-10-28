@@ -34,25 +34,6 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Detect package manager
-      id: pkg
-      shell: bash
-      run: |
-        if command -v apt-get &>/dev/null; then
-          echo "apt=true" >> "${GITHUB_OUTPUT}"
-        else
-          echo "apt=false" >> "${GITHUB_OUTPUT}"
-        fi
-
-    # GitHub-hosted Ubuntu runners occasionally hit a stalled mirror
-    # (azure.archive.ubuntu.com / ports.ubuntu.com) and apt-get hangs until the
-    # job times out. This routes apt-get through a local proxy that fails over
-    # to another mirror mid-download. Skipped in the Amazon Linux containers,
-    # which install packages with dnf.
-    - name: Keep apt-get from hanging on a stalled mirror
-      if: steps.pkg.outputs.apt == 'true'
-      uses: jksy/apt-install-unstuck@c5b4e965695550538c13e85e3634410e3b7d799d # v0.2.0
-
     - name: Install system build dependencies
       shell: bash
       env:
