@@ -91,6 +91,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Keep apt-get from hanging on a stalled mirror
+        if: ${{ !startsWith(matrix.target.os_tag, 'amzn') }}
+        uses: jksy/apt-install-unstuck@bd510647f3fa593582319f2c1c357688e566111c # v0.2.0
+
       - name: Build and verify ImageMagick
         id: build
         uses: ./.github/actions/build-imagemagick
