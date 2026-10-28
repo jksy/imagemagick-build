@@ -98,7 +98,7 @@ jobs:
       # containers, which install packages with dnf.
       - name: Keep apt-get from hanging on a stalled mirror
         if: ${{ !matrix.target.container }}
-        uses: jksy/apt-install-unstuck@c5b4e965695550538c13e85e3634410e3b7d799d # v0.2.0
+        uses: jksy/apt-install-unstuck@bd510647f3fa593582319f2c1c357688e566111c # v0.2.0
 
       - name: Build and verify ImageMagick
         id: build
