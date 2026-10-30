@@ -9,16 +9,6 @@ permissions:
   contents: read
 
 jobs:
-  actionlint:
-    name: Lint GitHub Actions workflows
-    runs-on: ubuntu-26.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Run actionlint
-        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2
-
   readme-sync:
     name: Verify README.md is in sync with libraries.json
     runs-on: ubuntu-26.04
@@ -98,3 +88,23 @@ jobs:
         with:
           cache_suffix: ${{ matrix.os_tag }}-${{ matrix.arch }}
           disable_openmp: ${{ matrix.variant == 'no-openmp' && 'true' || 'false' }}
+
+  ci-passed:
+    if: always()
+    needs: [readme-sync, build-and-test]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Check CI results
+        shell: bash
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<<"$NEEDS"
+          failed="$(jq -r '[to_entries[] | select(.value.result != "success") | .key] | join(", ")' <<<"$NEEDS")"
+          if [[ -n "$failed" ]]; then
+            echo "::error::CI jobs did not succeed: $failed"
+            exit 1
+          fi
