@@ -5,3 +5,12 @@ self-hosted-runner:
   labels:
     - ubuntu-26.04
     - ubuntu-26.04-arm
+
+# `uses: $/.github/actions/...` is the self-repository form that the workflow
+# dependency lockfile (.github/workflows/actions.lock) requires for local
+# actions. actionlint 1.7.12 does not know this form yet, so the error is
+# ignored here. Remove this once actionlint accepts `$/` references.
+paths:
+  .github/workflows/**/*.yml:
+    ignore:
+      - 'specifying action "\$/[^"]*" in invalid format because ref is missing'
