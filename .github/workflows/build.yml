@@ -131,7 +131,7 @@ jobs:
           done
 
       - name: Upload artifact
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: imagemagick-${{ steps.build.outputs.imagemagick }}-${{ matrix.target.os_tag }}-${{ matrix.target.arch }}${{ matrix.variant.suffix }}
           path: /tmp/artifacts/
@@ -178,7 +178,7 @@ jobs:
           fi
 
       - name: Download build artifacts
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: imagemagick-${{ steps.versions.outputs.imagemagick }}-*
           merge-multiple: true
@@ -234,7 +234,7 @@ jobs:
           BODYEOF
 
       - name: Create Release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: ${{ github.ref_name }}
           name: ImageMagick ${{ steps.versions.outputs.imagemagick }}
@@ -293,13 +293,13 @@ jobs:
 
     steps:
       - name: Download build artifacts
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: imagemagick-*
           merge-multiple: true
           path: /tmp/artifacts/
 
       - name: Attest build provenance
-        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: /tmp/artifacts/*.tar.gz
