@@ -51,6 +51,19 @@ case "${VARIANT}" in
   *) echo "Error: Unsupported IMAGEMAGICK_VARIANT: ${VARIANT} (supported: no-openmp)" >&2; exit 1 ;;
 esac
 
+# IMAGEMAGICK_VERIFY_ATTESTATION=1 verifies the downloaded tarball against the
+# build provenance attestation before extracting it. Requires the gh CLI, but
+# no GitHub authentication.
+case "${IMAGEMAGICK_VERIFY_ATTESTATION:-}" in
+  ""|0|false) VERIFY_ATTESTATION=0 ;;
+  1|true)     VERIFY_ATTESTATION=1 ;;
+  *) echo "Error: Unsupported IMAGEMAGICK_VERIFY_ATTESTATION: ${IMAGEMAGICK_VERIFY_ATTESTATION} (supported: 1, true, 0, false)" >&2; exit 1 ;;
+esac
+if [[ "${VERIFY_ATTESTATION}" = "1" ]] && ! command -v gh >/dev/null 2>&1; then
+  echo "Error: IMAGEMAGICK_VERIFY_ATTESTATION requires the gh CLI (https://cli.github.com/)" >&2
+  exit 1
+fi
+
 echo "Detected: ${PRETTY_NAME:-${ID} ${VERSION_ID}} / ${ARCH}${VARIANT_SUFFIX:+ / variant: ${VARIANT}}"
 
 # Ensure required tools and runtime dependencies are available
@@ -59,6 +72,8 @@ command -v curl       >/dev/null 2>&1 || _missing+=(curl)
 command -v tar        >/dev/null 2>&1 || _missing+=(tar)
 command -v gzip       >/dev/null 2>&1 || _missing+=(gzip)
 command -v pkg-config >/dev/null 2>&1 || _missing+=(pkg-config)
+[[ "${VERIFY_ATTESTATION}" = "1" ]] && { command -v sha256sum >/dev/null 2>&1 || _missing+=(coreutils); }
+[[ "${VERIFY_ATTESTATION}" = "1" ]] && { command -v jq >/dev/null 2>&1 || _missing+=(jq); }
 
 # libgomp.so.1 (OpenMP runtime) is needed by both variants: the default build
 # of ImageMagick itself, and LibRaw in either case. Ubuntu and amazonlinux:2023
@@ -104,7 +119,6 @@ else
   echo "Fetching latest release from GitHub..."
   RELEASE_JSON=$(curl -fsSL "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/releases/latest")
 fi
-unset _curl_auth
 echo "::endgroup::"
 # "|| true" keeps set -e from killing the script when grep finds no match,
 # so the explicit empty-check below can print a useful error instead.
@@ -138,8 +152,33 @@ echo "  Destination: ${INSTALL_BASE}/imagemagick/${IM_VERSION}/"
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT
 
-echo "::group::Downloading and extracting archive"
+echo "::group::Downloading archive"
 curl -fsSL --progress-bar -o "${TMP_DIR}/${TARBALL}" "$ASSET_URL"
+echo "::endgroup::"
+
+if [[ "${VERIFY_ATTESTATION}" = "1" ]]; then
+  echo "::group::Verifying build provenance attestation"
+  RELEASE_TAG=$(echo "$RELEASE_JSON" | jq -r '.tag_name')
+  DIGEST=$(sha256sum "${TMP_DIR}/${TARBALL}" | cut -d' ' -f1)
+  echo "  Tag:    ${RELEASE_TAG}"
+  echo "  Digest: sha256:${DIGEST}"
+  # Attestations of a public repository can be fetched without authentication,
+  # and gh does not require a login when verifying a local --bundle.
+  curl -fsSL "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/attestations/sha256:${DIGEST}" \
+    | jq -c '.attestations[].bundle' > "${TMP_DIR}/attestation.jsonl"
+  # --source-ref ties the build to the requested tag, so an asset built from
+  # another tag (or copied into this release) is rejected.
+  gh attestation verify "${TMP_DIR}/${TARBALL}" \
+    --bundle "${TMP_DIR}/attestation.jsonl" \
+    --repo "${REPO}" \
+    --signer-workflow "${REPO}/.github/workflows/build.yml" \
+    --source-ref "refs/tags/${RELEASE_TAG}" \
+    --deny-self-hosted-runners
+  echo "::endgroup::"
+fi
+unset _curl_auth
+
+echo "::group::Extracting archive"
 
 # Extract (use sudo if INSTALL_BASE is not writable)
 USE_SUDO=0

@@ -216,6 +216,64 @@ jobs:
           echo "Installed version: ${IM_VERSION}"
           echo "Requested tag (with v prefix): ${{ steps.latest.outputs.tag }}"
 
+  test-verify-attestation:
+    name: Test install.sh with IMAGEMAGICK_VERIFY_ATTESTATION
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      # GITHUB_TOKEN only raises the API rate limit; gh needs no login here.
+      - name: Run install.sh with attestation verification
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: IMAGEMAGICK_VERIFY_ATTESTATION=1 bash install.sh
+
+      - name: Verify installation
+        run: |
+          IM_VERSION=$(ls /opt/imagemagick/)
+          export PATH="/opt/imagemagick/${IM_VERSION}/bin:${PATH}"
+          export LD_LIBRARY_PATH="/opt/imagemagick/${IM_VERSION}/lib:${LD_LIBRARY_PATH:-}"
+          magick -version
+
+      # v7.1.2-34 is a former rolling release whose assets were overwritten
+      # by the v7.1.2-34-20261028 rebuild, so its attestation names another tag.
+      - name: Expect failure on an asset built from another tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if IMAGEMAGICK_INSTALL_BASE="${RUNNER_TEMP}/rolling" IMAGEMAGICK_VERSION=v7.1.2-34 IMAGEMAGICK_VERIFY_ATTESTATION=1 bash install.sh; then
+            echo "ERROR: install.sh should have rejected an asset built from another tag" >&2
+            exit 1
+          fi
+          if [[ -d "${RUNNER_TEMP}/rolling/imagemagick" ]]; then
+            echo "ERROR: the rejected tarball was extracted" >&2
+            exit 1
+          fi
+          echo "OK: install.sh rejected the asset before extracting it"
+
+  test-verify-attestation-without-gh:
+    name: Test error on IMAGEMAGICK_VERIFY_ATTESTATION without gh
+    runs-on: ubuntu-24.04
+    container:
+      image: amazonlinux:2023
+
+    steps:
+      - name: Install git
+        run: dnf install -y git
+
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Expect failure without gh
+        run: |
+          if IMAGEMAGICK_VERIFY_ATTESTATION=1 bash install.sh 2>&1; then
+            echo "ERROR: install.sh should have failed without gh" >&2
+            exit 1
+          fi
+          echo "OK: install.sh refused to install without gh"
+
   test-unsupported-os:
     name: Test error on unsupported OS (Ubuntu 20.04)
     runs-on: ubuntu-24.04
