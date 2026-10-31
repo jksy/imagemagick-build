@@ -234,7 +234,8 @@ jobs:
             else
               echo "  OK: ${license_count} license file(s)"
             fi
-            if tar -tzf "${archive}" | grep -qE 'VERSIONS$'; then
+            # Not grep -q: tar would get SIGPIPE and pipefail would fail the check.
+            if tar -tzf "${archive}" | grep -E 'VERSIONS$' >/dev/null; then
               echo "  OK: VERSIONS file found"
             else
               echo "  ERROR: VERSIONS file not found" >&2

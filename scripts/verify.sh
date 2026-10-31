@@ -28,8 +28,11 @@ echo "::endgroup::"
 echo ""
 echo "::group::Format support"
 MISSING=0
+# Captured first: piping into grep -q lets magick die of SIGPIPE, which
+# pipefail reports as a missing format.
+FORMATS=$("${MAGICK}" -list format)
 for fmt in JPEG PNG TIFF WEBP AVIF HEIC PDF; do
-  if "${MAGICK}" -list format | grep -q "^  *${fmt}"; then
+  if grep -q "^  *${fmt}" <<<"${FORMATS}"; then
     echo "  [OK] ${fmt}"
   else
     echo "  [MISSING] ${fmt}" >&2

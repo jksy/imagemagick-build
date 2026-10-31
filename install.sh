@@ -64,7 +64,9 @@ command -v pkg-config >/dev/null 2>&1 || _missing+=(pkg-config)
 # of ImageMagick itself, and LibRaw in either case. Ubuntu and amazonlinux:2023
 # images usually ship it; amazonlinux:2027 does not.
 _need_libgomp=0
-if ! ldconfig -p 2>/dev/null | grep -q 'libgomp\.so\.1'; then
+# Not grep -q: it exits on the first match, ldconfig gets SIGPIPE, and
+# pipefail turns that into a false "missing".
+if ! ldconfig -p 2>/dev/null | grep 'libgomp\.so\.1' >/dev/null; then
   _need_libgomp=1
 fi
 
