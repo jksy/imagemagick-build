@@ -22,9 +22,7 @@ on:
         default: 'false'
 
 permissions:
-  contents: write
-  id-token: write      # OIDC token for artifact attestation
-  attestations: write  # GitHub native artifact attestation
+  contents: read
 
 jobs:
   build:
@@ -142,6 +140,8 @@ jobs:
     needs: build
     runs-on: ubuntu-26.04
     if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -164,18 +164,6 @@ jobs:
               libheif) echo "libheif=${version}" ;;
             esac
           done >> "${GITHUB_OUTPUT}"
-
-      - name: Detect tag type
-        id: tag_type
-        run: |
-          TAG="${{ github.ref_name }}"
-          IM_VERSION="${{ steps.versions.outputs.imagemagick }}"
-          # Dated snapshot tags look like v7.1.2-18-20260405 or v7.1.2-18-20260405-2
-          if [[ "${TAG}" == "v${IM_VERSION}-"* ]]; then
-            echo "is_dated=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "is_dated=false" >> "${GITHUB_OUTPUT}"
-          fi
 
       - name: Download build artifacts
         uses: actions/download-artifact@v8.0.2
@@ -233,16 +221,6 @@ jobs:
           \`\`\`
           BODYEOF
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v3.0.3
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: ImageMagick ${{ steps.versions.outputs.imagemagick }}
-          body_path: /tmp/release_body.md
-          files: /tmp/artifacts/*
-          draft: false
-          prerelease: false
-
       - name: Verify archive contents
         run: |
           echo "::group::Verifying archive contents"
@@ -266,20 +244,15 @@ jobs:
           echo "::endgroup::"
           exit "${fail}"
 
-      - name: Update rolling release
-        if: steps.tag_type.outputs.is_dated == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          ROLLING_TAG="v${{ steps.versions.outputs.imagemagick }}"
-
-          # Upload new artifacts, overwriting existing ones (-clobber replaces files with same name)
-          gh release upload "${ROLLING_TAG}" /tmp/artifacts/* --clobber
-
-          # Update release title and body
-          gh release edit "${ROLLING_TAG}" \
-            --title "ImageMagick ${{ steps.versions.outputs.imagemagick }}" \
-            --notes-file /tmp/release_body.md
+      - name: Create Release
+        uses: softprops/action-gh-release@v3.0.3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ImageMagick ${{ steps.versions.outputs.imagemagick }}
+          body_path: /tmp/release_body.md
+          files: /tmp/artifacts/*
+          draft: false
+          prerelease: false
 
   attest:
     name: Attest build provenance
