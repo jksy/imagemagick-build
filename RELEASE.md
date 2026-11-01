@@ -93,6 +93,22 @@ check-new-version.yml（workflow_dispatch）
 
 ---
 
+## リリースノート
+
+`build.yml` の release ジョブが作る固定の本文（ライブラリのバージョン表とインストール方法）の後ろに、
+前回のリリースからマージされた PR の一覧を GitHub が自動生成して付ける。
+PR はラベルで分類され、`.github/release.yml` の上から最初に一致した分類に入る。
+
+| 分類 | ラベル | 付け方 |
+|---|---|---|
+| Breaking Changes | `breaking change` | 手で付ける（例: `install.sh` に必須の依存が増えた） |
+| Installer | `installer` | labeler（`install.sh`） |
+| Build | `build` | labeler（`scripts/**`、`.github/actions/build-imagemagick/**`） |
+| Bundled libraries | `dependencies` | Renovate（`libraries.json` の更新） |
+| CI | `github_actions` | labeler（`.github/**`、`renovate.json`）、Renovate（Actions・Dockerfile の更新） |
+
+---
+
 ## 関連ワークフロー早見表
 
 | ファイル | トリガー | 役割 |
@@ -102,3 +118,4 @@ check-new-version.yml（workflow_dispatch）
 | `build.yml` | `v*` タグ push / main への push / 手動 | ビルド・リリース・attestation |
 | `ci.yml` | main への PR | lint・shellcheck など基本検証 |
 | `test-installer.yml` | install.sh 変更を含む PR | インストールスクリプトの動作確認 |
+| `labeler.yml` | PR | 変更したファイルからリリースノート用のラベルを付ける |

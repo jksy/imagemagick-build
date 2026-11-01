@@ -123,8 +123,14 @@
       "groupName": "GitHub Actions"
     },
     {
+      "description": "Labels group the release notes (.github/release.yml): bundled libraries ship in the archives, the rest is CI tooling",
+      "matchManagers": ["github-actions", "dockerfile"],
+      "labels": ["github_actions"]
+    },
+    {
       "matchManagers": ["custom.regex"],
-      "groupName": "bundled libraries"
+      "groupName": "bundled libraries",
+      "labels": ["dependencies"]
     },
     {
       "description": "Bundled libraries: safety net for the loose-versioned deps (lcms2, LibRaw) whose parser never flags pre-releases — skip alpha/beta/rc/pre tags. semver-versioned deps are already covered by ignoreUnstable",

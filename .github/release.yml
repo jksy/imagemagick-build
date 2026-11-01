@@ -1,0 +1,22 @@
+# Categories for the auto-generated part of release notes (build.yml sets
+# generate_release_notes). A PR goes into the first category whose labels
+# it has, so CI comes last: a change to .github/actions/build-imagemagick/
+# carries both build and github_actions and should land under Build.
+# Nothing is excluded, for the same reason.
+changelog:
+  categories:
+    - title: Breaking Changes
+      labels:
+        - breaking change
+    - title: Installer
+      labels:
+        - installer
+    - title: Build
+      labels:
+        - build
+    - title: Bundled libraries
+      labels:
+        - dependencies
+    - title: CI
+      labels:
+        - github_actions

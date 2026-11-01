@@ -251,6 +251,10 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: ImageMagick ${{ steps.versions.outputs.imagemagick }}
           body_path: /tmp/release_body.md
+          # Appends the PRs merged since the previous release, grouped by
+          # .github/release.yml. GitHub picks the previous release by date,
+          # which is right across the mix of vX.Y.Z-N and dated tags.
+          generate_release_notes: true
           files: /tmp/artifacts/*
           draft: false
           prerelease: false

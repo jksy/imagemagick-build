@@ -1,0 +1,17 @@
+# Path-based labels for PRs; .github/release.yml groups release notes by them.
+# libraries.json is left out of build: Renovate labels those PRs dependencies.
+installer:
+  - changed-files:
+      - any-glob-to-any-file: install.sh
+
+build:
+  - changed-files:
+      - any-glob-to-any-file:
+          - scripts/**
+          - .github/actions/build-imagemagick/**
+
+github_actions:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/**
+          - renovate.json
