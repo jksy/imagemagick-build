@@ -109,15 +109,17 @@ echo "::endgroup::"
 # Fetch release asset URL (specific version or latest)
 _curl_auth=()
 [[ -n "${GITHUB_TOKEN:-}" ]] && _curl_auth=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+# Bound every request so a stalled connection cannot hang the install.
+_curl_opts=(-fsSL --connect-timeout 10 --retry 3 --retry-delay 2)
 
 echo "::group::Fetching release from GitHub"
 if [[ -n "${IMAGEMAGICK_VERSION:-}" ]]; then
   IMAGEMAGICK_VERSION="v${IMAGEMAGICK_VERSION#v}"
   echo "Fetching release ${IMAGEMAGICK_VERSION} from GitHub..."
-  RELEASE_JSON=$(curl -fsSL "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/releases/tags/${IMAGEMAGICK_VERSION}")
+  RELEASE_JSON=$(curl "${_curl_opts[@]}" --max-time 60 "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/releases/tags/${IMAGEMAGICK_VERSION}")
 else
   echo "Fetching latest release from GitHub..."
-  RELEASE_JSON=$(curl -fsSL "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/releases/latest")
+  RELEASE_JSON=$(curl "${_curl_opts[@]}" --max-time 60 "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/releases/latest")
 fi
 echo "::endgroup::"
 # "|| true" keeps set -e from killing the script when grep finds no match,
@@ -153,7 +155,7 @@ TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 echo "::group::Downloading archive"
-curl -fsSL --progress-bar -o "${TMP_DIR}/${TARBALL}" "$ASSET_URL"
+curl "${_curl_opts[@]}" --max-time 300 --progress-bar -o "${TMP_DIR}/${TARBALL}" "$ASSET_URL"
 echo "::endgroup::"
 
 if [[ "${VERIFY_ATTESTATION}" = "1" ]]; then
@@ -164,7 +166,7 @@ if [[ "${VERIFY_ATTESTATION}" = "1" ]]; then
   echo "  Digest: sha256:${DIGEST}"
   # Attestations of a public repository can be fetched without authentication,
   # and gh does not require a login when verifying a local --bundle.
-  curl -fsSL "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/attestations/sha256:${DIGEST}" \
+  curl "${_curl_opts[@]}" --max-time 60 "${_curl_auth[@]}" "https://api.github.com/repos/${REPO}/attestations/sha256:${DIGEST}" \
     | jq -c '.attestations[].bundle' > "${TMP_DIR}/attestation.jsonl"
   # --source-ref ties the build to the requested tag, so an asset built from
   # another tag (or copied into this release) is rejected.
@@ -176,36 +178,53 @@ if [[ "${VERIFY_ATTESTATION}" = "1" ]]; then
     --deny-self-hosted-runners
   echo "::endgroup::"
 fi
-unset _curl_auth
+unset _curl_auth _curl_opts
 
 echo "::group::Extracting archive"
+
+_unsafe=$(tar -tzf "${TMP_DIR}/${TARBALL}" | grep -E '^/|(^|/)\.\.(/|$)' || true)
+if [[ -n "${_unsafe}" ]]; then
+  echo "Error: Archive contains unsafe paths:" >&2
+  echo "${_unsafe}" >&2
+  exit 1
+fi
+unset _unsafe
+
+# Do not keep the archive's owners and modes when extracting as root.
+_tar_opts=(--no-same-owner --no-same-permissions -xzf "${TMP_DIR}/${TARBALL}" -C "$INSTALL_BASE")
 
 # Extract (use sudo if INSTALL_BASE is not writable)
 USE_SUDO=0
 if [[ -w "$INSTALL_BASE" ]] || [[ ! -e "$INSTALL_BASE" && -w "$(dirname "$INSTALL_BASE")" ]]; then
   mkdir -p "$INSTALL_BASE"
-  tar -xzf "${TMP_DIR}/${TARBALL}" -C "$INSTALL_BASE"
+  tar "${_tar_opts[@]}"
 else
   echo "No write permission to ${INSTALL_BASE}, using sudo..."
   sudo mkdir -p "$INSTALL_BASE"
-  sudo tar -xzf "${TMP_DIR}/${TARBALL}" -C "$INSTALL_BASE"
+  sudo tar "${_tar_opts[@]}"
   USE_SUDO=1
 fi
+unset _tar_opts
 echo "::endgroup::"
 
 # Fix pkg-config prefix to match actual installation path
 echo "::group::Fixing pkg-config paths"
 PC_DIR="${INSTALL_BASE}/imagemagick/${IM_VERSION}/lib/pkgconfig"
+# The archives are built with --prefix=/opt/imagemagick, which also appears
+# outside prefix= (includearchdir, Libs.private).
+_pc_dest="${INSTALL_BASE}/imagemagick/${IM_VERSION}"
+_pc_sed=(-e "s|/opt/imagemagick/|${_pc_dest}/|g" -e "s|/opt/imagemagick\$|${_pc_dest}|" -e "s|^prefix=.*|prefix=${_pc_dest}|")
 if [[ -d "$PC_DIR" ]]; then
   for _pc in "${PC_DIR}"/*.pc; do
     [[ -f "$_pc" ]] || continue
     if [[ "$USE_SUDO" -eq 1 ]]; then
-      sudo sed -i "s|^prefix=.*|prefix=${INSTALL_BASE}/imagemagick/${IM_VERSION}|" "$_pc"
+      sudo sed -i "${_pc_sed[@]}" "$_pc"
     else
-      sed -i "s|^prefix=.*|prefix=${INSTALL_BASE}/imagemagick/${IM_VERSION}|" "$_pc"
+      sed -i "${_pc_sed[@]}" "$_pc"
     fi
   done
 fi
+unset _pc _pc_dest _pc_sed
 echo "::endgroup::"
 
 BIN_DIR="${INSTALL_BASE}/imagemagick/${IM_VERSION}/bin"

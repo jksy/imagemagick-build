@@ -124,6 +124,10 @@ jobs:
             echo "ERROR: prefix mismatch: expected ${INSTALL_DIR}, got ${PC_PREFIX}" >&2
             exit 1
           fi
+          if grep -rn '/opt/imagemagick' "${INSTALL_DIR}/lib/pkgconfig"; then
+            echo "ERROR: pkg-config files still point at the build prefix /opt/imagemagick" >&2
+            exit 1
+          fi
           echo "OK: prefix matches installation path"
 
   test-version-pinned-install:
