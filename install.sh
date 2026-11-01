@@ -210,16 +210,21 @@ echo "::endgroup::"
 # Fix pkg-config prefix to match actual installation path
 echo "::group::Fixing pkg-config paths"
 PC_DIR="${INSTALL_BASE}/imagemagick/${IM_VERSION}/lib/pkgconfig"
+# The archives are built with --prefix=/opt/imagemagick, which also appears
+# outside prefix= (includearchdir, Libs.private).
+_pc_dest="${INSTALL_BASE}/imagemagick/${IM_VERSION}"
+_pc_sed=(-e "s|/opt/imagemagick/|${_pc_dest}/|g" -e "s|/opt/imagemagick\$|${_pc_dest}|" -e "s|^prefix=.*|prefix=${_pc_dest}|")
 if [[ -d "$PC_DIR" ]]; then
   for _pc in "${PC_DIR}"/*.pc; do
     [[ -f "$_pc" ]] || continue
     if [[ "$USE_SUDO" -eq 1 ]]; then
-      sudo sed -i "s|^prefix=.*|prefix=${INSTALL_BASE}/imagemagick/${IM_VERSION}|" "$_pc"
+      sudo sed -i "${_pc_sed[@]}" "$_pc"
     else
-      sed -i "s|^prefix=.*|prefix=${INSTALL_BASE}/imagemagick/${IM_VERSION}|" "$_pc"
+      sed -i "${_pc_sed[@]}" "$_pc"
     fi
   done
 fi
+unset _pc _pc_dest _pc_sed
 echo "::endgroup::"
 
 BIN_DIR="${INSTALL_BASE}/imagemagick/${IM_VERSION}/bin"
