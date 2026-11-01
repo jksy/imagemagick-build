@@ -59,6 +59,14 @@ curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install
 curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | IMAGEMAGICK_INSTALL_BASE=$HOME/.local bash
 ```
 
+ビルド元を検証してからインストールする場合 / Verify the build provenance before installing:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | IMAGEMAGICK_VERIFY_ATTESTATION=1 bash
+```
+
+The tarball is extracted only if its attestation shows it was built by this repository's `build.yml` from the requested release tag. This requires the [GitHub CLI](https://cli.github.com/) (`gh`), but no GitHub login or token. Rolling releases that were overwritten before releases became immutable fail this check; use a newer release.
+
 ## Variants / ビルドバリアント
 
 Each release ships every platform in two variants:
