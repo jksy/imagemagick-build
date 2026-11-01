@@ -105,7 +105,7 @@ PR はラベルで分類され、`.github/release.yml` の上から最初に一�
 | Installer | `installer` | labeler（`install.sh`） |
 | Build | `build` | labeler（`scripts/**`、`.github/actions/build-imagemagick/**`） |
 | Bundled libraries | `dependencies` | Renovate（`libraries.json` の更新） |
-| CI | `github_actions` | labeler（`.github/**`）、Renovate（Actions・Dockerfile の更新） |
+| CI | `github_actions` | labeler（`.github/**`、`renovate.json`）、Renovate（Actions・Dockerfile の更新） |
 
 ---
 
