@@ -59,6 +59,14 @@ curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install
 curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | IMAGEMAGICK_INSTALL_BASE=$HOME/.local bash
 ```
 
+ビルド元を検証してからインストールする場合 / Verify the build provenance before installing:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jksy/imagemagick-build/main/install.sh | IMAGEMAGICK_VERIFY_ATTESTATION=1 bash
+```
+
+The tarball is extracted only if its attestation shows it was built by this repository's `build.yml` from the requested release tag. This requires the [GitHub CLI](https://cli.github.com/) (`gh`), but no GitHub login or token. Rolling releases that were overwritten before releases became immutable fail this check; use a newer release.
+
 ## Variants / ビルドバリアント
 
 Each release ships every platform in two variants:
@@ -169,8 +177,13 @@ HEIC 読み込みのスモークテスト（`scripts/verify.sh`）で使用し�
 
 | Tag | Description |
 |---|---|
-| `vX.Y.Z-N` | Rolling release — always points to the latest build for that ImageMagick version |
-| `vX.Y.Z-N-YYYYMMDD` | Snapshot release — a pinned build created when bundled libraries are updated |
+| `vX.Y.Z-N` | First build for that ImageMagick version |
+| `vX.Y.Z-N-YYYYMMDD` | Rebuild created when bundled libraries are updated |
+
+Releases are immutable: once published, their assets and tags never change. To pick up a rebuild, specify the newer `vX.Y.Z-N-YYYYMMDD` tag.
+
+> [!NOTE]
+> Previously, `vX.Y.Z-N` was a rolling release whose assets were overwritten by each rebuild. Releases published before immutable releases were enabled may still be modified; pin a release published after that to get a fixed build.
 
 The typical automated flows:
 
@@ -182,7 +195,7 @@ The typical automated flows:
 1. Renovate merges a PR updating library versions in `libraries.json`
 2. `rebuild-on-library-update.yml` creates a dated snapshot tag `vX.Y.Z-N-YYYYMMDD`
 3. The tag push triggers `build.yml` → compiles on all 4 platforms
-4. The snapshot release `vX.Y.Z-N-YYYYMMDD` is published, and the rolling release `vX.Y.Z-N` is updated with the new artifacts
+4. The release `vX.Y.Z-N-YYYYMMDD` is published. Earlier releases, including `vX.Y.Z-N`, are left unchanged
 
 ---
 
@@ -198,4 +211,4 @@ The typical automated flows:
 1. Renovate が `libraries.json` のライブラリバージョンを更新する PR をマージ
 2. `rebuild-on-library-update.yml` が日付付きスナップショットタグ `vX.Y.Z-N-YYYYMMDD` を作成
 3. タグのプッシュにより `build.yml` がトリガー → 4プラットフォームでコンパイル
-4. スナップショットリリース `vX.Y.Z-N-YYYYMMDD` が公開され、ローリングリリース `vX.Y.Z-N` の成果物も更新される
+4. リリース `vX.Y.Z-N-YYYYMMDD` が公開される。`vX.Y.Z-N` を含む既存のリリースは変更されない
