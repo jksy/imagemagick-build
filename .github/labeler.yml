@@ -12,4 +12,6 @@ build:
 
 github_actions:
   - changed-files:
-      - any-glob-to-any-file: .github/**
+      - any-glob-to-any-file:
+          - .github/**
+          - renovate.json
