@@ -28,7 +28,7 @@ JPEG, PNG, TIFF, WebP, AVIF, HEIC (read), PDF, RAW (read: DNG, CR2/CR3, NEF, ARW
 | libjpeg-turbo | 3.2.1 |
 | libpng | 1.6.59 |
 | libtiff | 4.7.2 |
-| lcms2 | 2.19.1 |
+| lcms2 | 2.20 |
 | libwebp | 1.6.0 |
 | libaom | 3.15.3 |
 | libde265 | 1.1.3 |
