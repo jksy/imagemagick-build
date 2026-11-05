@@ -246,7 +246,7 @@ jobs:
           exit "${fail}"
 
       - name: Create Release
-        uses: softprops/action-gh-release@v3.0.3
+        uses: softprops/action-gh-release@v3.0.4
         with:
           tag_name: ${{ github.ref_name }}
           name: ImageMagick ${{ steps.versions.outputs.imagemagick }}
