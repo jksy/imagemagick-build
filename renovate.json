@@ -111,11 +111,12 @@
   ],
   "packageRules": [
     {
-      "description": "Ubuntu versions in test-installer.yml are intentional test matrix entries (test targets), not dependency updates",
+      "description": "Ubuntu / Amazon Linux versions in test-installer.yml are intentional test matrix entries (test targets), not dependency updates",
       "matchFileNames": [".github/workflows/test-installer.yml"],
       "enabled": false,
       "matchDepNames": [
-        "/^ubuntu/"
+        "/^ubuntu/",
+        "/^amazonlinux/"
       ]
     },
     {
