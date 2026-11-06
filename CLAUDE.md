@@ -9,7 +9,7 @@ ImageMagickを必要なライブラリごとソースからビルドし、Ubuntu
 - `scripts/verify.sh` — ビルド後の動作確認。`identify -list format` で対応フォーマットを検証。
 - `scripts/package.sh` — `tar.gz` アーカイブ作成。
 - `scripts/generate-sbom.sh` — SBOM (Software Bill of Materials) 生成。
-- `scripts/sync-readme.sh` — `libraries.json` から README.md の Bundled Libraries テーブルを再生成。`--check` で CI 検証。
+- `scripts/sync-readme.sh` — `libraries.json` から README.md の Bundled Libraries テーブルと対応フォーマットを再生成。`--check` で CI 検証、`--print-table` / `--print-formats` はリリースノート生成用。
 - `install.sh` — エンドユーザー向けワンライナーインストールスクリプト。
 - `.github/actions/build-imagemagick/action.yml` — ビルドを担う再利用可能コンポジットアクション。
 - `ci.yml` / `build.yml` の Ubuntu ランナーでは、ビルド前に [jksy/apt-install-unstuck](https://github.com/jksy/apt-install-unstuck) を実行しているため、以降の `apt-get` はミラー切替プロキシ経由になる（Amazon Linux コンテナではスキップ）。apt の挙動が素の状態と違って見える場合はここを確認。

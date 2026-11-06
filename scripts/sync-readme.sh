@@ -3,8 +3,10 @@
 #   * the "Bundled Libraries" table
 #   * the "Supported Formats" line
 # Usage:
-#   scripts/sync-readme.sh           # rewrite README.md in place
-#   scripts/sync-readme.sh --check   # exit 1 if README.md is out of sync (no write)
+#   scripts/sync-readme.sh                 # rewrite README.md in place
+#   scripts/sync-readme.sh --check         # exit 1 if README.md is out of sync (no write)
+#   scripts/sync-readme.sh --print-table   # print the libraries table only (used for release notes)
+#   scripts/sync-readme.sh --print-formats # print the formats line only (used for release notes)
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -15,14 +17,18 @@ LIB_END_MARKER="<!-- BUNDLED_LIBRARIES_END -->"
 FORMATS_START_MARKER="<!-- SUPPORTED_FORMATS_START -->"
 FORMATS_END_MARKER="<!-- SUPPORTED_FORMATS_END -->"
 
-CHECK_ONLY=false
-if [ "${1:-}" = "--check" ]; then
-  CHECK_ONLY=true
-elif [ -n "${1:-}" ]; then
-  echo "Unknown argument: $1" >&2
-  echo "Usage: $0 [--check]" >&2
-  exit 2
-fi
+MODE="write"
+case "${1:-}" in
+  "") ;;
+  --check) MODE=check ;;
+  --print-table) MODE=print-table ;;
+  --print-formats) MODE=print-formats ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    echo "Usage: $0 [--check | --print-table | --print-formats]" >&2
+    exit 2
+    ;;
+esac
 
 for marker in "${LIB_START_MARKER}" "${LIB_END_MARKER}" \
               "${FORMATS_START_MARKER}" "${FORMATS_END_MARKER}"; do
@@ -46,6 +52,11 @@ if jq -e '.[] | select(.key == "libraw")' "${LIBRARIES_JSON}" >/dev/null 2>&1; t
   FORMATS="${FORMATS}, RAW (read: DNG, CR2/CR3, NEF, ARW, RAF, ORF, RW2, PEF, SRW, ほか — via LibRaw)"
 fi
 
+case "${MODE}" in
+  print-table) printf '%s\n' "${TABLE}"; exit 0 ;;
+  print-formats) printf '%s\n' "${FORMATS}"; exit 0 ;;
+esac
+
 # Replace everything between a START/END marker pair with the given content.
 replace_block() {
   local content="$1" start="$2" end="$3" body="$4"
@@ -60,7 +71,7 @@ NEW_README=$(cat "${README}")
 NEW_README=$(replace_block "${NEW_README}" "${LIB_START_MARKER}" "${LIB_END_MARKER}" "${TABLE}")
 NEW_README=$(replace_block "${NEW_README}" "${FORMATS_START_MARKER}" "${FORMATS_END_MARKER}" "${FORMATS}")
 
-if [ "${CHECK_ONLY}" = true ]; then
+if [ "${MODE}" = check ]; then
   if ! diff -u "${README}" <(printf '%s\n' "${NEW_README}") >/dev/null; then
     echo "README.md is out of sync with libraries.json. Run: scripts/sync-readme.sh" >&2
     diff -u "${README}" <(printf '%s\n' "${NEW_README}") || true
