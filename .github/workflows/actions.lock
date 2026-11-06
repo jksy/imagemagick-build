@@ -11,7 +11,7 @@ workflows:
         - 'actions/checkout@v7.0.1'
         - 'actions/download-artifact@v8.0.2'
         - 'actions/upload-artifact@v7.0.2'
-        - 'jksy/apt-install-unstuck@v0.2.0'
+        - 'jksy/apt-install-unstuck@v0.3.0'
         - 'softprops/action-gh-release@v3.0.4'
     '.github/workflows/check-new-version.yml':
         - 'actions/checkout@v7.0.1'
@@ -19,7 +19,7 @@ workflows:
         - 'actions/cache@v6.1.0'
         - 'actions/checkout@v7.0.1'
         - 'actions/upload-artifact@v7.0.2'
-        - 'jksy/apt-install-unstuck@v0.2.0'
+        - 'jksy/apt-install-unstuck@v0.3.0'
     '.github/workflows/labeler.yml':
         - 'actions/labeler@v7.0.0'
     '.github/workflows/rebuild-on-library-update.yml':
@@ -63,9 +63,9 @@ dependencies:
         commit: 'sha1-cf430e030ddbb5b0abf93d22962f4752f3646cd9'
         owner_id: 44036562
         repo_id: 192625955
-    'jksy/apt-install-unstuck@v0.2.0':
-        ref: 'v0.2.0'
-        commit: 'sha1-bd510647f3fa593582319f2c1c357688e566111c'
+    'jksy/apt-install-unstuck@v0.3.0':
+        ref: 'v0.3.0'
+        commit: 'sha1-a6918340f1312affe9b26969c18051f66eea5783'
         owner_id: 143718
         repo_id: 1435926565
     'softprops/action-gh-release@v3.0.4':
