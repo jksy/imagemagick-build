@@ -81,7 +81,7 @@ jobs:
 
       - name: Keep apt-get from hanging on a stalled mirror
         if: ${{ !startsWith(matrix.os_tag, 'amzn') }}
-        uses: jksy/apt-install-unstuck@v0.2.0
+        uses: jksy/apt-install-unstuck@v0.3.0
 
       - name: Build and verify ImageMagick
         uses: $/.github/actions/build-imagemagick
