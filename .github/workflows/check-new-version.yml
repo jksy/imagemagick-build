@@ -100,9 +100,35 @@ jobs:
           git add libraries.json README.md
           git commit -m "chore: bump ImageMagick to ${NEW}"
           git push origin "${BRANCH}"
+
+          CURRENT="${{ steps.current.outputs.version }}"
+          UPSTREAM="https://github.com/ImageMagick/ImageMagick"
+          PUBLISHED=$(gh api "repos/ImageMagick/ImageMagick/releases/tags/${NEW}" \
+            --jq '.published_at[0:10]' 2>/dev/null || echo "unknown")
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          cat > pr-body.md <<EOF
+          ## ImageMagick ${CURRENT} → ${NEW}
+
+          upstream で新しいリリースが公開されたため、バージョンを更新します。
+
+          | | |
+          |---|---|
+          | Release | [${NEW}](${UPSTREAM}/releases/tag/${NEW}) (${PUBLISHED}) |
+          | Changes | [${CURRENT}...${NEW}](${UPSTREAM}/compare/${CURRENT}...${NEW}) |
+
+          ### マージ後
+          \`rebuild-on-library-update.yml\` が \`v${NEW}\` タグを作成し、\`build.yml\` がリリースを公開します。
+
+          ### チェックリスト
+          - [ ] CI が全ターゲットで pass
+          - [ ] upstream の変更内容を確認（破壊的変更・セキュリティ修正の有無）
+
+          ---
+          Created by [${GITHUB_WORKFLOW}](${RUN_URL}) (${GITHUB_EVENT_NAME})
+          EOF
           gh pr create \
             --title "chore: bump ImageMagick to ${NEW}" \
-            --body "ImageMagick ${NEW} が公開されたため、自動バージョンアップします。" \
+            --body-file pr-body.md \
             --base main \
             --head "${BRANCH}"
 
