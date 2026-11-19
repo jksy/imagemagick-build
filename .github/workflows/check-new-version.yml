@@ -2,7 +2,7 @@ name: Check for new ImageMagick release
 
 on:
   schedule:
-    - cron: '0 9 * * 1'
+    - cron: '0 9 * * *'
   workflow_dispatch:
     inputs:
       version:
@@ -58,6 +58,18 @@ jobs:
             echo "exists=false" >> "${GITHUB_OUTPUT}"
           fi
 
+      # 日次実行のため、bump PR が未マージの間は同じブランチを再作成しない
+      - name: Check if bump branch already exists
+        id: branch_check
+        run: |
+          BRANCH="bump/imagemagick-${{ steps.target.outputs.version }}"
+          if git ls-remote --heads origin "refs/heads/${BRANCH}" | grep -q .; then
+            echo "exists=true" >> "${GITHUB_OUTPUT}"
+            echo "Branch ${BRANCH} already exists, skipping"
+          else
+            echo "exists=false" >> "${GITHUB_OUTPUT}"
+          fi
+
       # --- 手動指定: main を変えずにタグだけ打つ ---
       - name: Build specified version (manual)
         if: |
@@ -84,6 +96,7 @@ jobs:
         if: |
           steps.target.outputs.manual == 'false' &&
           steps.tag_check.outputs.exists == 'false' &&
+          steps.branch_check.outputs.exists == 'false' &&
           steps.target.outputs.version != steps.current.outputs.version
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
@@ -136,6 +149,14 @@ jobs:
         if: steps.tag_check.outputs.exists == 'true'
         run: |
           echo "Tag v${{ steps.target.outputs.version }} already exists, nothing to do."
+
+      - name: Bump PR already pending
+        if: |
+          steps.target.outputs.manual == 'false' &&
+          steps.tag_check.outputs.exists == 'false' &&
+          steps.branch_check.outputs.exists == 'true'
+        run: |
+          echo "Branch bump/imagemagick-${{ steps.target.outputs.version }} already exists; waiting for its PR to be merged."
 
       - name: Already at latest
         if: |
