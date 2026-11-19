@@ -10,10 +10,10 @@
 
 ---
 
-## ケース 1: ImageMagick バージョンアップ（自動・毎週月曜）
+## ケース 1: ImageMagick バージョンアップ（自動・毎日）
 
 ```
-check-new-version.yml（毎週月曜 09:00 UTC に起動）
+check-new-version.yml（毎日 09:00 UTC に起動）
   └─ 最新バージョンを検出
   └─ bump/imagemagick-{NEW} ブランチを作成・push
   └─ main への PR を作成（タグはまだ作らない）
@@ -113,7 +113,7 @@ PR はラベルで分類され、`.github/release.yml` の上から最初に一�
 
 | ファイル | トリガー | 役割 |
 |---|---|---|
-| `check-new-version.yml` | 毎週月曜 / 手動 | IM バージョン検出・bump ブランチ作成・PR 作成 |
+| `check-new-version.yml` | 毎日 / 手動 | IM バージョン検出・bump ブランチ作成・PR 作成 |
 | `rebuild-on-library-update.yml` | main への push（libraries.json 変更時） | タグ作成（IM バージョンアップ時は `v{NEW}`、ライブラリのみ更新時は日付付き） |
 | `build.yml` | `v*` タグ push / main への push / 手動 | ビルド・リリース・attestation |
 | `ci.yml` | main への PR | lint・shellcheck など基本検証 |
