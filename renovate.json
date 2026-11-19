@@ -107,6 +107,15 @@
       "datasourceTemplate": "github-tags",
       "versioningTemplate": "loose",
       "extractVersionTemplate": "^v?(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/claude-renovate-review\\.yml$/"
+      ],
+      "matchStrings": ["CLAUDE_CODE_VERSION:\\s*(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "@anthropic-ai/claude-code",
+      "datasourceTemplate": "npm"
     }
   ],
   "packageRules": [
@@ -142,6 +151,13 @@
       "description": "LibRaw tags beta releases with a trailing letter (e.g. 0.21.5b) — only track plain X.Y.Z stable tags",
       "matchDepNames": ["LibRaw/LibRaw"],
       "allowedVersions": "/^\\d+\\.\\d+\\.\\d+$/"
+    },
+    {
+      "description": "The Claude Code CLI used by claude-renovate-review.yml is CI tooling, not a bundled library — group and label it with the GitHub Actions updates. It releases almost daily, so update it weekly",
+      "matchDepNames": ["@anthropic-ai/claude-code"],
+      "groupName": "GitHub Actions",
+      "labels": ["github_actions"],
+      "schedule": ["* 0-8 * * 1"]
     }
   ]
 }
