@@ -5,6 +5,12 @@ name: Claude Renovate Review
 # API キーの Secret は持たない。フェデレーションルールは
 # repo:jksy/imagemagick-build:pull_request に限定している。
 #
+# claude-code-action は使わず、Claude Code の CLI（claude -p）を直接実行する。
+# action 経由の実行は Claude Code の利用として扱われ、Max プランに付く月次の
+# API クレジットの対象外になるため（anthropics/claude-code-action#1901）。
+# claude -p を Console 組織の認証情報で直接実行した分は Agent SDK の利用として
+# クレジットの対象になる。
+#
 # PR 本文・上流のリリースノート・差分は外部の人が書いた内容なので、
 # プロンプトインジェクションを前提に権限をジョブで分ける:
 #   review  — Claude を実行。トークンは読み取り専用で、コメント本文を出力として返すだけ
@@ -36,26 +42,36 @@ jobs:
       actions: read # CI 結果の参照
       id-token: write # Workload Identity Federation 用の OIDC トークン
     outputs:
-      result: ${{ steps.claude.outputs.structured_output }}
+      result: ${{ steps.claude.outputs.result }}
+    env:
+      CLAUDE_CODE_VERSION: 2.1.328
     steps:
+      # PR の head ではなく base（main）をチェックアウトする。PR 側の .claude/ や
+      # CLAUDE.md（hooks や設定）を Claude Code に読ませないため。PR の変更内容は
+      # gh pr diff で読む。
       - uses: actions/checkout@v7.0.1
         with:
+          ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 1
           persist-credentials: false
 
-      - uses: anthropics/claude-code-action@v1.0.276
-        id: claude
-        with:
-          # いずれも識別子（シークレットではない）。リポジトリの Variables で管理する
-          anthropic_federation_rule_id: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
-          anthropic_organization_id: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
-          anthropic_service_account_id: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          allowed_bots: renovate
-          prompt: |
-            REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.pull_request.number }}
+      - name: Install Claude Code
+        run: |
+          set -euo pipefail
+          curl -fsSL https://claude.ai/install.sh | bash -s "${CLAUDE_CODE_VERSION}"
+          echo "${HOME}/.local/bin" >> "$GITHUB_PATH"
 
+      - name: Review with Claude
+        id: claude
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          # いずれも識別子（シークレットではない）。リポジトリの Variables で管理する
+          ANTHROPIC_FEDERATION_RULE_ID: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
+          ANTHROPIC_ORGANIZATION_ID: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
+          ANTHROPIC_SERVICE_ACCOUNT_ID: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
+          SCHEMA: '{"type":"object","properties":{"body":{"type":"string"}},"required":["body"]}'
+          PROMPT: |
             あなたは jksy/imagemagick-build の依存更新レビュアーです。この PR は Renovate が作成した依存更新です。
             このリポジトリは ImageMagick と同梱ライブラリをソースからビルドし、事前ビルド済みバイナリを
             GitHub Releases で配布しています。同梱ライブラリのバージョンは libraries.json で管理し、
@@ -103,9 +119,66 @@ jobs:
                中身は「主な変更点 / 既存への影響 / 不審点 / 根拠 URL」。1 依存あたり 800 文字程度を目安に要点を絞る
             確認できなかった項目は「未確認」と明記し、推測で問題なしとしないでください。
             このレビューは人間がマージ判断するための補助です。
-          claude_args: |
-            --json-schema '{"type":"object","properties":{"body":{"type":"string"}},"required":["body"]}'
-            --allowedTools "Read,Grep,Glob,WebFetch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh api:*),Bash(git ls-remote:*)"
+        run: |
+          set -euo pipefail
+
+          # GitHub の OIDC トークンは約 5 分で失効し、交換にも 1 回しか使えない（jti）。
+          # Claude Code は Anthropic のトークンを更新するたびにこのファイルを読み直すので、
+          # レビュー中はバックグラウンドで新しいトークンに書き換え続ける。
+          export ANTHROPIC_IDENTITY_TOKEN_FILE="${RUNNER_TEMP}/gha-jwt"
+          fetch_token() {
+            local tmp
+            tmp="$(mktemp "${ANTHROPIC_IDENTITY_TOKEN_FILE}.XXXXXX")"
+            if curl -sSf -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+                "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=https://api.anthropic.com" \
+                | jq -er .value > "${tmp}"; then
+              chmod 600 "${tmp}"
+              mv "${tmp}" "${ANTHROPIC_IDENTITY_TOKEN_FILE}"
+            else
+              rm -f "${tmp}"
+              return 1
+            fi
+          }
+          fetch_token
+          (
+            while sleep 120; do
+              fetch_token || echo "::warning::Failed to refresh the GitHub OIDC token"
+            done
+          ) &
+          refresher=$!
+          trap 'kill "${refresher}" 2>/dev/null || true' EXIT
+
+          printf 'REPO: %s\nPR NUMBER: %s\n\n%s' "${GITHUB_REPOSITORY}" "${PR_NUMBER}" "${PROMPT}" \
+            > "${RUNNER_TEMP}/prompt.md"
+
+          # --setting-sources user: リポジトリ側の .claude/settings*.json を読まない
+          # --tools: 使えるツール自体を読み取り系に絞る（Write / Edit などを外す）
+          # --allowedTools: その中で確認なしに実行してよいものを列挙する
+          status=0
+          claude -p \
+            --model claude-sonnet-5-5 \
+            --max-turns 40 \
+            --setting-sources user \
+            --tools "Read,Grep,Glob,WebFetch,Bash" \
+            --allowedTools "Read,Grep,Glob,WebFetch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh api:*),Bash(git ls-remote:*)" \
+            --output-format json \
+            --json-schema "${SCHEMA}" \
+            < "${RUNNER_TEMP}/prompt.md" \
+            > "${RUNNER_TEMP}/result.json" || status=$?
+
+          # 失敗の原因が追えるよう、本文以外の結果は常にログに出す
+          jq '{is_error, subtype, api_error_status, num_turns, duration_ms, total_cost_usd, permission_denials, errors}' \
+            "${RUNNER_TEMP}/result.json" || true
+
+          if [ "${status}" -ne 0 ] \
+              || ! jq -e '.is_error == false and (.structured_output.body | type) == "string"' \
+                "${RUNNER_TEMP}/result.json" > /dev/null; then
+            echo "::error::Claude did not return a review (exit status ${status})"
+            jq -r '.result // empty' "${RUNNER_TEMP}/result.json" || true
+            exit 1
+          fi
+
+          echo "result=$(jq -c .structured_output "${RUNNER_TEMP}/result.json")" >> "$GITHUB_OUTPUT"
 
   comment:
     needs: review
