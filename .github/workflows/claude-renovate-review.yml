@@ -6,7 +6,11 @@ name: Claude Renovate Review
 # repo:jksy/imagemagick-build:pull_request に限定している。
 #
 # PR 本文・上流のリリースノート・差分は外部の人が書いた内容なので、
-# Claude には読み取りとコメント投稿だけを許可し、コードの実行や push はさせない。
+# プロンプトインジェクションを前提に権限をジョブで分ける:
+#   review  — Claude を実行。トークンは読み取り専用で、コメント本文を出力として返すだけ
+#   comment — Claude は関与せず、固定のコマンドでコメントを 1 件投稿・更新する
+# allowedTools の前方一致では `gh api ... -X POST` のような書き込みを防げないため、
+# 書き込み権限そのものを review ジョブに渡さない。
 
 on:
   pull_request:
@@ -28,9 +32,11 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
-      pull-requests: write # PR コメントの投稿
+      pull-requests: read
       actions: read # CI 結果の参照
       id-token: write # Workload Identity Federation 用の OIDC トークン
+    outputs:
+      result: ${{ steps.claude.outputs.structured_output }}
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -38,6 +44,7 @@ jobs:
           persist-credentials: false
 
       - uses: anthropics/claude-code-action@v1.0.276
+        id: claude
         with:
           # いずれも識別子（シークレットではない）。リポジトリの Variables で管理する
           anthropic_federation_rule_id: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
@@ -63,7 +70,7 @@ jobs:
             1. `gh pr view` と `gh pr diff` で変更内容（どの依存が、どのバージョンからどのバージョンへ）を把握する。
             2. 依存ごとに上流の変更を調べる。GitHub 上のものは `gh api` で releases / tags / compare を参照する。
                GitHub 以外（gitlab.com の libtiff、aomedia.googlesource.com の libaom など）は WebFetch や `git ls-remote` を使う。
-            3. 下記の観点で評価し、PR コメントを 1 件投稿する。
+            3. 下記の観点で評価し、レビュー結果を出力する。
 
             ## レビュー観点
             ### A. 既存への影響
@@ -87,13 +94,37 @@ jobs:
             - この PR の CI（`gh pr checks`）の状況
 
             ## 出力
-            `gh pr comment ${{ github.event.pull_request.number }} --edit-last --create-if-none --body-file <file>` で、
-            日本語のコメントを 1 件だけ投稿・更新してください（PR が更新されるたびに同じコメントを上書きします）。
+            PR へのコメント投稿・承認・ラベル付けなど、GitHub への書き込みは一切行わないでください（権限もありません）。
+            レビュー結果は日本語の Markdown 文字列として `body` に入れて返してください。後続のジョブがそのまま PR コメントとして投稿します。
             形式:
-            - 先頭行に判定: `✅ 問題なし` / `⚠️ 要確認` / `🚨 マージ非推奨` のいずれか
-            - 依存ごとの「バージョン変更 / 主な変更点 / 既存への影響 / 不審点」
-            - 判断の根拠にした URL
+            1. 先頭行に全体の判定: `✅ 問題なし` / `⚠️ 要確認` / `🚨 マージ非推奨` のいずれか
+            2. 依存ごとの一覧（1 依存 1 行: 依存名、旧バージョン → 新バージョン、その依存の判定、一言の要約）
+            3. 依存ごとの詳細を `<details><summary>依存名</summary> ... </details>` で折りたたむ。
+               中身は「主な変更点 / 既存への影響 / 不審点 / 根拠 URL」。1 依存あたり 800 文字程度を目安に要点を絞る
             確認できなかった項目は「未確認」と明記し、推測で問題なしとしないでください。
-            このレビューは人間がマージ判断するための補助です。承認やマージは行わないでください。
+            このレビューは人間がマージ判断するための補助です。
           claude_args: |
-            --allowedTools "Read,Grep,Glob,WebFetch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh pr comment:*),Bash(gh api:*),Bash(git ls-remote:*)"
+            --json-schema '{"type":"object","properties":{"body":{"type":"string"}},"required":["body"]}'
+            --allowedTools "Read,Grep,Glob,WebFetch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh api:*),Bash(git ls-remote:*)"
+
+  comment:
+    needs: review
+    if: needs.review.outputs.result != ''
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    steps:
+      # 本文は Claude の出力（＝外部入力の影響を受けうる）なので、run: に ${{ }} で
+      # 直接展開せず env 経由で渡し、標準入力から gh に読ませる。
+      # @ はメンション通知を飛ばさないよう全角に置き換える。
+      # GitHub のコメント上限（65,536 文字）を超えた場合は切り詰めずに失敗させる。
+      - name: Post review comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BODY: ${{ fromJSON(needs.review.outputs.result).body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          printf '%s\n' "${BODY//@/＠}" \
+            | gh pr comment "${PR_NUMBER}" -R "${GITHUB_REPOSITORY}" \
+                --edit-last --create-if-none --body-file -
