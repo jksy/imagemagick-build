@@ -44,7 +44,7 @@ jobs:
     outputs:
       result: ${{ steps.claude.outputs.result }}
     env:
-      CLAUDE_CODE_VERSION: 2.1.328
+      CLAUDE_CODE_VERSION: 2.1.331
     steps:
       # PR の head ではなく base（main）をチェックアウトする。PR 側の .claude/ や
       # CLAUDE.md（hooks や設定）を Claude Code に読ませないため。PR の変更内容は
